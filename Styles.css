@@ -59,9 +59,51 @@ select {
     display: block;
 }
 
+.menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #159447;
+    font-size: 20px;
+    cursor: pointer;
+}
+
 .nav-menu,
 .auth-links {
     display: none;
+}
+
+.navbar-container.menu-open {
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+}
+
+.navbar-container.menu-open .nav-menu,
+.navbar-container.menu-open .auth-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 12px;
+}
+
+.navbar-container.menu-open .nav-menu {
+    padding-top: 8px;
+}
+
+.navbar-container.menu-open .nav-menu a,
+.navbar-container.menu-open .auth-links a {
+    width: 100%;
+    padding: 4px 0;
+    color: #333;
+    font-size: 13px;
+    text-decoration: none;
 }
 
 /* =====================================
@@ -421,6 +463,10 @@ select {
 
     .navbar-container {
         padding: 0 25px;
+    }
+
+    .menu-toggle {
+        display: none;
     }
 
     .nav-menu,

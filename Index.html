@@ -32,7 +32,17 @@
                 <img src="assets/logo.png" alt="EcoTicket">
             </a>
 
-            <nav class="nav-menu">
+            <button
+                class="menu-toggle"
+                type="button"
+                aria-label="Abrir menú de navegación"
+                aria-expanded="false"
+                aria-controls="main-navigation"
+            >
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <nav class="nav-menu" id="main-navigation">
 
                 <a href="#">Inicio</a>
                 <a href="#">Eventos</a>
@@ -472,6 +482,31 @@
 
     </footer>
 
+    <script>
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navbarContainer = document.querySelector('.navbar-container');
+        const navigationLinks = document.querySelectorAll('.nav-menu a, .auth-links a');
+
+        menuToggle.addEventListener('click', () => {
+            const isOpen = navbarContainer.classList.toggle('menu-open');
+
+            menuToggle.setAttribute('aria-expanded', isOpen);
+            menuToggle.setAttribute(
+                'aria-label',
+                isOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'
+            );
+            menuToggle.innerHTML = `<i class="fa-solid fa-${isOpen ? 'xmark' : 'bars'}"></i>`;
+        });
+
+        navigationLinks.forEach((link) => {
+            link.addEventListener('click', () => {
+                navbarContainer.classList.remove('menu-open');
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.setAttribute('aria-label', 'Abrir menú de navegación');
+                menuToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+            });
+        });
+    </script>
 
 </body>
 
