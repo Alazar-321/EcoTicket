@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Buscador, { type SearchFilters } from '../components/Buscador'
-import EventCards, { events } from '../components/EventCard'
+import EventCards, { events } from '../components/EventCards'
 import type { Event } from '../types/event'
 
 function Home() {

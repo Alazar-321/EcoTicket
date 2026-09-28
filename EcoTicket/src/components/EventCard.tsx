@@ -5,13 +5,19 @@ export type EventCardProps = {
 }
 
 export default function EventCard({ event }: EventCardProps) {
-    const parsedDate = event.date ? new Date(event.date) : null
-    const isValidDate = parsedDate && !Number.isNaN(parsedDate.getTime())
+    const localDate = event.date
+        ? (() => {
+            const [year, month, day] = event.date.split('-').map(Number)
+            return new Date(year, month - 1, day)
+          })()
+        : null
 
-    const day = isValidDate ? parsedDate.getDate() : '—'
+    const isValidDate = localDate && !Number.isNaN(localDate.getTime())
+
+    const day = isValidDate ? localDate.getDate() : '—'
     const month = isValidDate
         ? new Intl.DateTimeFormat('es-CO', { month: 'short' })
-            .format(parsedDate)
+            .format(localDate)
             .replace('.', '')
             .toUpperCase()
         : 'DATE'
