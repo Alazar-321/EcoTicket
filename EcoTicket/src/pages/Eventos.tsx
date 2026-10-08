@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import EventCards, { events } from '../components/EventCards'
+import EventCards from '../components/EventCards'
 import Filter, { type FilterSelection } from '../components/Filter'
+import useEcoTicketData from '../hooks/useEcoTicketData'
 
 const defaultSelection: FilterSelection = {
   price: [],
@@ -29,6 +30,7 @@ const categoryAliases: Record<string, string[]> = {
 }
 
 const Eventos = () => {
+  const { events } = useEcoTicketData()
   const [filters, setFilters] = useState<FilterSelection>(defaultSelection)
 
   const filteredEvents = useMemo(() => {
@@ -94,7 +96,7 @@ const Eventos = () => {
 
       return matchesPrice && matchesDate && matchesCategory
     })
-  }, [filters])
+  }, [events, filters])
 
   return (
     <main className="container-fluid px-3 px-lg-4 py-4">

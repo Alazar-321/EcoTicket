@@ -15,8 +15,8 @@ function Footer() {
             </p>
           </div>
           <div className="col d-flex flex-column">
-            <h5 className="mb-1">Enlaces</h5>
-            <nav className="d-flex flex-column gap-2">
+            <h2 className="h5 mb-1">Enlaces</h2>
+            <nav className="d-flex flex-column gap-2" aria-label="Enlaces del pie de página">
               <a className="text-success text-decoration-none" href="/">
                 Inicio
               </a>
@@ -25,9 +25,9 @@ function Footer() {
               </a>
               <a
                 className="text-success text-decoration-none"
-                href="/mis-tickets"
+                href="/mis_tickets"
               >
-                Mis tickets
+                Mis reservas
               </a>
             </nav>
           </div>
@@ -44,7 +44,8 @@ function Footer() {
             <div className="d-flex align-items-center gap-2 mt-2">
               <img
                 src="/src/assets/call.png"
-                alt="Soporte"
+                alt=""
+                aria-hidden="true"
                 style={{ width: "60px", height: "auto" }}
               />
               <span>

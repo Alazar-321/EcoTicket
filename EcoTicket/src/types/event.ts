@@ -1,17 +1,4 @@
 export type Event = {
-  title: string
-  organizer: string
-  city: string
-  category: string
-  description: string
-  date: string
-  day?: string
-  month?: string
-  weekday?: string
-  image: string
-  price: number
-}
-export type Event = {
     id?: number
     title: string
     organizer: string
@@ -24,7 +11,7 @@ export type Event = {
     weekday?: string
     image: string
     location?: string
-    price?: string | number
+    price?: number
     name?: string
     created_at?: string
 }

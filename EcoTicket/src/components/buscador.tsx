@@ -81,12 +81,12 @@ export default function Buscador({ onSearch }: BuscadorProps) {
               <MapPin size={21} aria-hidden="true" />
             </span>
 
+            <label htmlFor="event-city" className="visually-hidden">Ciudad</label>
             <select
               id="event-city"
               name="city"
               className="form-select border-0 bg-white ps-1 py-3"
               defaultValue=""
-              aria-label="Ciudad"
               disabled={loadingCities}
             >
               <option value="" disabled>
@@ -109,12 +109,12 @@ export default function Buscador({ onSearch }: BuscadorProps) {
               <Grid3X3 size={21} aria-hidden="true" />
             </span>
 
+            <label htmlFor="event-category" className="visually-hidden">Categoría</label>
             <select
               id="event-category"
               name="category"
               className="form-select border-0 bg-white ps-1 py-3"
               defaultValue=""
-              aria-label="Categoría"
             >
               <option value="" disabled>
                 Categoría
@@ -140,13 +140,13 @@ export default function Buscador({ onSearch }: BuscadorProps) {
               <CalendarDays size={21} aria-hidden="true" />
             </button>
 
+            <label htmlFor="event-date" className="visually-hidden">Fecha</label>
             <input
               ref={dateRef}
               id="event-date"
               name="date"
               type="date"
               className="form-control border-0 bg-white ps-1 py-3"
-              aria-label="Fecha"
             />
           </div>
         </div>
@@ -158,13 +158,13 @@ export default function Buscador({ onSearch }: BuscadorProps) {
               <Search size={22} aria-hidden="true" />
             </span>
 
+            <label htmlFor="event-search" className="visually-hidden">Buscar por artista o evento</label>
             <input
               id="event-search"
               name="query"
               type="search"
               className="form-control border-0 bg-white ps-1 py-3 fw-semibold"
               placeholder="Buscar por artista, evento..."
-              aria-label="Buscar por artista o evento"
             />
           </div>
         </div>
@@ -174,6 +174,7 @@ export default function Buscador({ onSearch }: BuscadorProps) {
           <button
             type="submit"
             className="btn btn-primary rounded-0 w-100 h-100 d-flex align-items-center justify-content-center gap-2 py-3"
+            aria-label="Buscar eventos"
           >
             <Search size={22} aria-hidden="true" />
 
