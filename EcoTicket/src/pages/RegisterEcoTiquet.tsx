@@ -161,7 +161,7 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
   };
 
   return (
-    <div className="container min-vh-100 d-flex justify-content-center align-items-center py-5">
+    <div className="container min-vh-100 d-flex justify-content-center align-items-center py-5 admin-agente">
       <div className="col-12 col-md-10 col-lg-8 col-xl-6">
         <div className="card eco-card p-4 p-md-5 bg-white">
           <div className="text-center mb-4">
@@ -358,7 +358,7 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
                 <label className="form-check-label small" htmlFor="acceptTerms">
                   Acepto los{" "}
                   <a
-                    href="#terms"
+                    href="/terminos"
                     className="text-success text-decoration-underline"
                   >
                     Términos Eco-Sostenibles

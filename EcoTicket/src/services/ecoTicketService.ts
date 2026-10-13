@@ -12,6 +12,7 @@ export type Reservation = {
   status: ReservationStatus
   price?: number
   paidAt?: string
+  user_id?: string | null 
 }
 
 const CART_KEY = 'eco_ticket_cart'

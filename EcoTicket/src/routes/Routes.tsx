@@ -1,3 +1,4 @@
+import { lazy, Suspense, useState, useEffect } from 'react'
 import {
   BrowserRouter,
   Routes,
@@ -6,17 +7,11 @@ import {
   Outlet,
   useLocation,
 } from 'react-router-dom'
-import { useState, useEffect } from 'react'
 
-
+// Páginas que ve cualquier visitante al entrar: se cargan con la aplicación
 import Home from '../pages/Home'
 import Eventos from '../pages/Eventos'
-import Mis_tickets from '../pages/Mis_tickets'
-import Carrito from '../pages/Carrito'
-import Soporte from '../pages/Soporte'
 import Login from '../pages/Login'
-import Admin from '../pages/Admin'
-import Agente from '../pages/Agente'
 import RegisterEcoTiquet from '../pages/RegisterEcoTiquet'
 
 import Navbar from '../components/Navbar'
@@ -24,19 +19,42 @@ import Footer from '../components/Footer'
 
 import { getCurrentUser, type User } from '../auth/auth'
 
+// Páginas que se descargan solo al visitarlas (Recharts, QR, etc. no pesan en la portada)
+const Mis_tickets = lazy(() => import('../pages/Mis_tickets'))
+const Carrito = lazy(() => import('../pages/Carrito'))
+const Admin = lazy(() => import('../pages/Admin'))
+const Agente = lazy(() => import('../pages/Agente'))
+const Soporte = lazy(() => import('../pages/Soporte'))
+const Terms = lazy(() => import('../pages/Terms'))
+
+function PageFallback() {
+  return (
+    <div
+      className="container py-5 text-center text-body-secondary"
+      style={{ minHeight: '50vh' }}
+      role="status"
+    >
+      Cargando...
+    </div>
+  )
+}
+
 function RoleRoute({
   role,
 }: {
   role: 'ADMINISTRADOR' | 'AGENTE' | 'CLIENTE'
 }) {
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    getCurrentUser().then(setUser)
+    getCurrentUser()
+      .then(setUser)
+      .finally(() => setIsLoading(false))
   }, [])
 
-  if (user === null) {
-    return null // O un spinner de carga
+  if (isLoading) {
+    return <PageFallback />
   }
 
   if (!user) {
@@ -62,56 +80,47 @@ function RouteContent() {
       )}
       <Navbar />
 
-      <Routes>
+      <Suspense fallback={<PageFallback />}>
+        <Routes>
 
-        {/* Rutas públicas */}
-        <Route path="/" element={<Home />} />
+          {/* Rutas públicas */}
+          <Route path="/" element={<Home />} />
 
-        <Route path="/eventos" element={<Eventos />} />
+          <Route path="/eventos" element={<Eventos />} />
 
-        <Route path="/soporte" element={<Soporte />} />
+          <Route path="/soporte" element={<Soporte />} />
 
-        <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-        <Route path="/register" element={<RegisterEcoTiquet />} />  
+          <Route path="/register" element={<RegisterEcoTiquet />} />
 
-
-        {/* Reservas exclusivas de clientes */}
-        <Route element={<RoleRoute role="CLIENTE" />}>
-          <Route path="/mis_tickets" element={<Mis_tickets />} />
-          <Route path="/carrito" element={<Carrito />} />
-        </Route>
+          <Route path="/terminos" element={<Terms />} />
 
 
-        {/* Solo ADMINISTRADOR */}
-        <Route element={<RoleRoute role="ADMINISTRADOR" />}>
-
-          <Route
-            path="/admin"
-            element={<Admin />}
-          />
-
-        </Route>
+          {/* Reservas exclusivas de clientes */}
+          <Route element={<RoleRoute role="CLIENTE" />}>
+            <Route path="/mis_tickets" element={<Mis_tickets />} />
+            <Route path="/carrito" element={<Carrito />} />
+          </Route>
 
 
-        {/* Solo AGENTE */}
-        <Route element={<RoleRoute role="AGENTE" />}>
-
-          <Route
-            path="/agente"
-            element={<Agente />}
-          />
-
-        </Route>
+          {/* Solo ADMINISTRADOR */}
+          <Route element={<RoleRoute role="ADMINISTRADOR" />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
 
 
-        {/* Ruta desconocida */}
-        <Route
-          path="*"
-          element={<Navigate to="/" replace />}
-        />
+          {/* Solo AGENTE */}
+          <Route element={<RoleRoute role="AGENTE" />}>
+            <Route path="/agente" element={<Agente />} />
+          </Route>
 
-      </Routes>
+
+          {/* Ruta desconocida */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+        </Routes>
+      </Suspense>
 
       <Footer />
     </>

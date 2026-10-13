@@ -58,8 +58,8 @@ export default function Buscador({ onSearch }: BuscadorProps) {
     const formData = new FormData(event.currentTarget)
 
     onSearch({
-      city: String(formData.get('city') ?? ''),
-      category: String(formData.get('category') ?? ''),
+      city: String(formData.get('city') ?? '').trim(),
+      category: String(formData.get('category') ?? '').trim(),
       date: String(formData.get('date') ?? ''),
       query: String(formData.get('query') ?? '').trim().toLowerCase(),
     })
@@ -119,11 +119,11 @@ export default function Buscador({ onSearch }: BuscadorProps) {
               <option value="" disabled>
                 Categoría
               </option>
-              <option value="music">Música</option>
-              <option value="theater">Teatro</option>
-              <option value="sports">Deportes</option>
               <option value="concerts">Conciertos</option>
-              <option value="diy">Bricolaje</option>
+              <option value="sports">Deportes (Running)</option>
+              <option value="crafting">Bricolaje</option>
+              <option value="environment">Medio ambiente</option>
+              <option value="theater">Teatro</option>
             </select>
           </div>
         </div>

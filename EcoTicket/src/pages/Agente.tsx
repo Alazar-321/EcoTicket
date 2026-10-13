@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getCurrentUser } from '../auth/auth'
+import { getCurrentUser, type User } from '../auth/auth'
 import useEcoTicketData from '../hooks/useEcoTicketData'
 import {
   createEvent,
@@ -8,16 +8,50 @@ import {
   type ReservationStatus,
 } from '../services/ecoTicketService'
 import type { Event } from '../types/event'
+import { APP_TIME_ZONE, formatDateOnly } from '../utils/date'
+
+// Fecha de un momento exacto (timestamp), mostrada siempre en hora de Colombia
+function formatRequestDate(value?: string) {
+  if (!value) return 'Fecha no disponible'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Fecha no disponible'
+  return new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'medium',
+    timeZone: APP_TIME_ZONE,
+  }).format(date)
+}
+
+// Fecha del evento ("YYYY-MM-DD"): se formatea sin que la zona horaria la mueva de día
+function formatEventDate(value?: string) {
+  return formatDateOnly(value, { dateStyle: 'medium' }) || 'Fecha no disponible'
+}
+
+function formatPrice(price: Event['price']) {
+  const numericPrice = Number(price ?? 0)
+  return numericPrice === 0
+    ? 'Gratis'
+    : new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0,
+      }).format(numericPrice)
+}
 
 function Agente() {
   const navigate = useNavigate()
-  const user = getCurrentUser()
+  const [user, setUser] = useState<User | null>(null)
   const { events, reservations } = useEcoTicketData()
   const [notice, setNotice] = useState('')
 
+  // getCurrentUser es asíncrona (igual que en Navbar y EventCards)
+  useEffect(() => {
+    getCurrentUser().then(setUser)
+  }, [])
+
   function handleCreateEvent(formEvent: FormEvent<HTMLFormElement>) {
     formEvent.preventDefault()
-    const form = new FormData(formEvent.currentTarget)
+    const formElement = formEvent.currentTarget
+    const form = new FormData(formElement)
 
     createEvent({
       title: String(form.get('title')),
@@ -30,17 +64,12 @@ function Agente() {
       price: Number(form.get('price')),
     })
 
-    formEvent.currentTarget.reset()
+    formElement.reset()
     setNotice('El evento quedó registrado y ya está disponible en el catálogo.')
   }
 
-  function formatPrice(price: Event['price']) {
-    const numericPrice = Number(price ?? 0)
-    return numericPrice === 0 ? 'Gratis' : new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(numericPrice)
-  }
-  
   return (
-    <main className="container py-5">
+    <main className="container py-5 admin-agente">
 
       <div className="d-flex justify-content-between align-items-center mb-4">
 
@@ -49,7 +78,7 @@ function Agente() {
             Panel del Agente
           </h1>
 
-          <p className="text-muted mb-0">
+          <p className="text-bold mb-0">
             Bienvenido, {user?.username}
           </p>
         </div>
@@ -125,7 +154,7 @@ function Agente() {
                   <tr key={event.id}>
                     <td className="fw-semibold">{event.title}</td>
                     <td>{event.city}</td>
-                    <td>{event.date}</td>
+                    <td>{formatEventDate(event.date)}</td>
                     <td>{formatPrice(event.price)}</td>
                   </tr>
                 ))}
@@ -150,13 +179,7 @@ function Agente() {
                     <tr key={reservation.id}>
                       <td>{reservation.customer}</td>
                       <td className="fw-semibold">{reservation.eventTitle}</td>
-                      <td>{
-                        reservation.createdAt
-                          ? (new Date(reservation.createdAt).toString() === 'Invalid Date'
-                              ? 'Fecha no disponible'
-                              : new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' }).format(new Date(reservation.createdAt)))
-                          : 'Fecha no disponible'
-                      }</td>
+                      <td>{formatRequestDate(reservation.createdAt)}</td>
                       <td>
                         {reservation.status === 'PAGADA' ? (
                           <span className="badge text-bg-success">Pagada</span>

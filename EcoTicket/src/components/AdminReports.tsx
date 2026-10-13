@@ -17,6 +17,7 @@ import {
 } from '../services/ecoTicketService'
 import type { Event } from '../types/event'
 import ReservationGraph from './ReservationGraph'
+import { APP_TIME_ZONE, formatDateOnly } from '../utils/date'
 
 // ───────────────────────── Utilidades ─────────────────────────
 
@@ -36,11 +37,20 @@ function formatEventPrice(price: Event['price']) {
   return value === 0 ? 'Gratis' : `$${value.toLocaleString('es-CO')}`
 }
 
+// Fecha de un momento exacto (timestamp), mostrada siempre en hora de Colombia
 function formatRequestDate(value?: string) {
   if (!value) return 'Fecha no disponible'
   const date = new Date(value)
   if (isNaN(date.getTime())) return 'Fecha no disponible'
-  return new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' }).format(date)
+  return new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'medium',
+    timeZone: APP_TIME_ZONE,
+  }).format(date)
+}
+
+// Fecha del evento ("YYYY-MM-DD"): se formatea sin que la zona horaria la mueva de día
+function formatEventDate(value?: string) {
+  return formatDateOnly(value, { dateStyle: 'medium' }) || 'Fecha no disponible'
 }
 
 function roleLabel(role: Profile['role']) {
@@ -138,7 +148,6 @@ function AdminReports() {
       icon: 'bi bi-cash-stack',
     },
     { label: 'Reservas recibidas', value: reservations.length, icon: 'bi bi-ticket-perforated' },
-    
   ]
 
   return (
@@ -147,7 +156,7 @@ function AdminReports() {
         {/* ── Encabezado ── */}
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
           <div>
-            <p className="text-success fw-semibold text-uppercase mb-1 small-letter-spacing">
+            <p className="text-light fw-semibold text-uppercase mb-1 small-letter-spacing">
               Resumen
             </p>
             <h2 className="h4 mb-0 text-dark fw-bold">Estadísticas del sistema</h2>
@@ -240,7 +249,7 @@ function AdminReports() {
                   <span className="badge text-bg-light flex-shrink-0">{formatEventPrice(event.price)}</span>
                 </div>
                 <div className="small text-muted mt-1">
-                  {event.city} · {event.date}
+                  {event.city} · {formatEventDate(event.date)}
                 </div>
               </li>
             ))}
@@ -266,7 +275,7 @@ function AdminReports() {
                     <td>{event.id}</td>
                     <td>{event.title}</td>
                     <td>{event.city}</td>
-                    <td>{event.date}</td>
+                    <td>{formatEventDate(event.date)}</td>
                     <td>{formatEventPrice(event.price)}</td>
                   </tr>
                 ))}

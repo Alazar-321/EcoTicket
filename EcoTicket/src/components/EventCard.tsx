@@ -1,5 +1,6 @@
 import type { Event } from '../types/event'
 import { Link } from 'react-router-dom'
+import { dateOnlyToDate, formatDateOnly } from '../utils/date'
 
 export type EventCardProps = {
     event: Event
@@ -16,17 +17,18 @@ export default function EventCard({
     isReserved = false,
     onReserve,
 }: EventCardProps) {
-    const parsedDate = event.date ? new Date(event.date) : null
-    const isValidDate = parsedDate && !Number.isNaN(parsedDate.getTime())
+    // La fecha del evento es "YYYY-MM-DD": se formatea sin que la zona horaria la mueva de día
+    const isValidDate = Boolean(dateOnlyToDate(event.date))
 
-    const day = isValidDate ? parsedDate.getDate() : '—'
+    const day = isValidDate ? Number(event.date.slice(8, 10)) : '—'
 
     const month = isValidDate
-        ? new Intl.DateTimeFormat('es-CO', { month: 'short' })
-            .format(parsedDate)
-            .replace('.', '')
-            .toUpperCase()
+        ? formatDateOnly(event.date, { month: 'short' }).replace('.', '').toUpperCase()
         : 'DATE'
+
+    const dateLabel = isValidDate
+        ? formatDateOnly(event.date, { dateStyle: 'long' })
+        : ''
 
     const numericPrice = Number(event.price ?? 0)
 
@@ -43,18 +45,23 @@ export default function EventCard({
         <article
             className="card h-100 overflow-hidden rounded-3 border-0 shadow-sm event-card"
         >
-            <div className="position-relative ">
+            <div className="position-relative">
                 <img
                     src={event.image}
                     className="card-img-top event-card-image"
                     alt={`Imagen del evento ${event.title}`}
+                    width="800"
+                    height="600"
+                    loading="lazy"
+                    decoding="async"
                 />
 
                 <div
                     className="event-date-badge"
+                    role="img"
                     aria-label={
                         isValidDate
-                            ? `Fecha del evento: ${parsedDate.toLocaleDateString('es-CO')}`
+                            ? `Fecha del evento: ${dateLabel}`
                             : 'Fecha no disponible'
                     }
                 >
@@ -78,22 +85,22 @@ export default function EventCard({
 
                 <header className="flex-grow-1">
 
-                    <h3 className="h6 mb-2 fw-bold text-dark text-uppercase">
+                    <h3 className="h6 mb-2 fw-bold text-body text-uppercase">
                         {event.title}
                     </h3>
 
-                    <p className="mb-2 text-secondary">
+                    <p className="mb-2 text-body-secondary">
                         <span className="fw-semibold">
                             Organiza:
                         </span>{' '}
                         {event.organizer}
                     </p>
 
-                    <p className="mb-3 text-secondary">
+                    <p className="mb-3 text-body-secondary">
                         {event.description}
                     </p>
 
-                    <dl className="mb-0 text-secondary">
+                    <dl className="mb-0 text-body-secondary">
 
                         <div className="d-flex align-items-center mb-1">
                             <dt className="me-2">
@@ -116,8 +123,8 @@ export default function EventCard({
 
                 </header>
 
-                <dl className="mb-0 d-flex justify-content-between align-items-center pt-2 border-top border-light-subtle">
-                    <dt className="text-muted small fw-normal">
+                <dl className="mb-0 d-flex justify-content-between align-items-center pt-2 border-top">
+                    <dt className="text-body-secondary small fw-normal">
                         Precio
                     </dt>
 
@@ -125,7 +132,7 @@ export default function EventCard({
                         className={`mb-0 fw-bold ${
                             numericPrice === 0
                                 ? 'text-success'
-                                : 'text-dark'
+                                : 'text-body'
                         }`}
                     >
                         {formattedPrice}

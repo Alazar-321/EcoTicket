@@ -1,5 +1,24 @@
+/* ==========================================================================
+   ECOTÍQUET – HOJA DE ESTILOS
+   ==========================================================================
+   ÍNDICE
+   1. Variables globales
+   2. Utilidades
+   3. Botones y componentes genéricos
+   4. Layout: Navbar, Buscador, Slider, Banner, Footer
+   5. Eventos: EventCard, EventTile, Filtros
+   6. Tickets (pantalla e impresión)
+   7. Autenticación (login)
+   8. Paneles: Administrador y Agente
+   9. Legado de la plantilla de Vite (se puede borrar)
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. VARIABLES GLOBALES
+   ========================================================================== */
 :root,
-[data-bs-theme=light]{
+[data-bs-theme=light] {
   --bs-gray-100: #f2f2f7;
   --bs-gray-200: #e9ecef;
   --bs-gray-300: #dee2e6;
@@ -13,6 +32,7 @@
   --eco-green-soft: #e8f7ee;
 }
 
+<<<<<<< HEAD
 .eco-card {
           border: none;
           border-radius: 1.25rem;
@@ -144,115 +164,136 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
+=======
+>>>>>>> e0a203d05b58464fd4875ec2a8b087ce0a71da97
 
+/* ==========================================================================
+   2. UTILIDADES
+   ========================================================================== */
 .small-letter-spacing {
   letter-spacing: 0.08em;
 }
 
-.admin-stat-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f5fbf7 100%);
-  border: 1px solid rgba(25, 135, 84, 0.08);
-  border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(20, 70, 40, 0.04);
+.text-shadow {
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
-.admin-stat-icon {
-  width: 52px;
-  height: 52px;
-  font-size: 1.2rem;
+
+/* ==========================================================================
+   3. BOTONES Y COMPONENTES GENÉRICOS
+   ========================================================================== */
+.eco-card {
+  border: none;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1);
 }
 
-.admin-stat-label {
-  font-size: 0.8rem;
+.btn-eco {
+  background-color: #2e7d32;
+  color: white;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
   font-weight: 600;
 }
 
-.admin-stat-value {
-  font-size: clamp(1.4rem, 2vw, 2rem);
-  font-weight: 700;
-  color: #1c1c1c;
+.btn-eco:hover {
+  background-color: #1b5e20;
+  color: white;
 }
 
-.chart-container {
-  width: 100%;
-  min-height: 280px;
-  background: #ffffff;
-  border: 1px solid rgba(25, 135, 84, 0.08);
-  border-radius: 1rem;
-  padding: 1rem;
-}
-
-.admin-table thead th {
-  background-color: #f6faf7;
-  color: #1f2d1f;
-  font-weight: 700;
-  border-bottom: 0;
-}
-
-.admin-table tbody tr {
-  border-color: rgba(25, 135, 84, 0.08);
-}
-
-.admin-reports {
-  overflow: hidden;
-}
-
-.buscador {
-  min-height: 60vh;
-  background-image: url('/src/assets/bg-green.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: repeat;
-}
-
-
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-.slider-image {
-  height: 550px;
+.logo-img {
+  width: 170px;
+  height: auto;
   object-fit: cover;
 }
 
+
+/* ==========================================================================
+   4. LAYOUT
+   ========================================================================== */
+
+/* ── 4.1 Buscador ── */
+.buscador {
+  top: 56px;
+  z-index: 1010;
+  min-height: 40vh;
+  background-image: url('/src/assets/bg-green1.webp');
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: repeat;
+}
+
+/* ── 4.2 Slider ── */
+.slider-image {
+  height: 450px;
+  object-fit:unset;
+}
+
+@media (max-width: 768px) {
+  .slider-image {
+    height: 220px;
+  }
+}
+
+/* ── 4.3 Banner digital ── */
+.banner-digital-icon {
+  width: 110px;
+  height: auto;
+  color: #2e9e4f;
+}
+
+.banner-digital-title {
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 800;
+  color: #000;
+  letter-spacing: -0.02em;
+}
+
+.banner-digital-subtitle {
+  font-size: clamp(.9rem, 1.6vw, 1.05rem);
+  font-weight: 600;
+  color: #111;
+}
+
+/* Subtítulo ligeramente desplazado a la derecha en escritorio */
+@media (min-width: 768px) {
+  .banner-digital-subtitle {
+    padding-left: 1.5rem;
+  }
+}
+
+/* ── 4.4 Footer ── */
+.bg_footer {
+  background-color: var(--bs-tertiary-bg);
+  padding: 10px; 
+}
+
+
+/* ==========================================================================
+   5. EVENTOS
+   ========================================================================== */
+
+/* ── 5.1 EventCard (tarjeta completa) ── */
 .event-card {
   transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease;
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   position: relative;
 }
 
 .event-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.15) !important;
-}
-
-.event-card-image {
-    transition: transform 0.35s ease;
-}
-
-.event-card:hover .event-card-image {
-    transform: scale(1.05);
+  transform: translateY(-6px);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.15) !important;
 }
 
 .event-card-image {
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.event-card:hover .event-card-image {
+  transform: scale(1.05);
 }
 
 .event-date-badge {
@@ -288,6 +329,58 @@
   color: #1d1d1d;
 }
 
+/* ── 5.2 EventTile (grid de destacados) ── */
+.event-tile-media {
+  position: relative;
+  overflow: hidden;
+}
+
+.event-tile-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.event-tile-title {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--bs-body-color);   /* antes #111 */
+  margin: 0;
+}
+
+.event-tile-date { color: #0a6ebd; line-height: 1.1; }
+[data-bs-theme='dark'] .event-tile-date { color: #5aaeea; }
+
+/* Destacada: en móvil proporción fija, en escritorio llena la altura sobrante */
+.event-tile-media.is-featured {
+  aspect-ratio: 4 / 5;
+}
+
+@media (min-width: 992px) {
+  .event-tile-media.is-featured {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+}
+
+.event-tile-title {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #111;
+  margin: 0;
+}
+
+.event-tile-date {
+  color: #0a6ebd;
+  line-height: 1.1;
+}
+
+/* ── 5.3 Panel de filtros ── */
 .eco-filter-panel {
   width: 260px;
   padding: 14px 16px 10px;
@@ -368,7 +461,12 @@
   text-decoration: underline;
 }
 
-/* ── Ticket: apilado en móvil, horizontal desde tablet ── */
+
+/* ==========================================================================
+   6. TICKETS
+   ========================================================================== */
+
+/* ── 6.1 Base (móvil: apilado) ── */
 .ticket-card {
   display: flex;
   flex-direction: column;
@@ -457,6 +555,7 @@
   color: #6c757d;
 }
 
+/* ── 6.2 Tablet en adelante: horizontal ── */
 @media (min-width: 768px) {
   .ticket-card {
     flex-direction: row;
@@ -475,7 +574,7 @@
   }
 }
 
-/* ── Impresión / Guardar como PDF: solo se imprimen los tickets ── */
+/* ── 6.3 Impresión / Guardar como PDF: solo se imprimen los tickets ── */
 @media print {
   body * {
     visibility: hidden;
@@ -514,9 +613,146 @@
   }
 }
 
-@media (max-width: 768px) {
-  .slider-image {
-    height: 220px;
+
+/* ==========================================================================
+   7. AUTENTICACIÓN
+   ========================================================================== */
+.login-page {
+  min-height: 100vh;
+  background-image: url('/src/assets/bg\ -jardin.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.login_card {
+  background-image: url('/src/assets/bg-green1.jpg');
+  background-size: cover;
+}
+
+
+/* ==========================================================================
+   8. PANELES: ADMINISTRADOR Y AGENTE
+   ========================================================================== */
+
+/* ── 8.1 Panel de administrador (.admin-reports) ── */
+.admin-reports {
+  position: relative;
+  isolation: isolate;               /* evita que el overlay se salga del componente */
+  overflow: hidden;
+  background-color: transparent;    /* Bootstrap pone .card en blanco */
+  background-image: url('./assets/bg_green.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Capa clara sobre la imagen para que se lean gráficas y tablas */
+.admin-reports::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.258);
+}
+
+/* Bloques internos con fondo propio */
+.admin-reports .report-section,
+.admin-reports .admin-stat-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: .75rem;
+  padding: 1rem;
+}
+
+/* ── 8.2 Panel de agente (.admin-agente) ── */
+.admin-agente {
+  min-height: 100vh;
+  background: rgba(255, 255, 255, 0.426);   /* panel translúcido */
+  border-radius: .75rem;
+  padding: 1.25rem;
+}
+
+.admin-agente::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url('./assets/bg_green.jpg') center / cover no-repeat;
+}
+
+/* ── 8.3 Tarjetas de estadísticas ── */
+.admin-stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f5fbf7 100%);
+  border: 1px solid rgba(25, 135, 84, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(20, 70, 40, 0.04);
+}
+
+.admin-stat-icon {
+  width: 52px;
+  height: 52px;
+  font-size: 1.2rem;
+}
+
+.admin-stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.admin-stat-value {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 700;
+  color: #1c1c1c;
+}
+
+/* ── 8.4 Gráficas ── */
+.chart-container {
+  width: 100%;
+  min-height: 280px;
+  background: #ffffff;
+  border: 1px solid rgba(25, 135, 84, 0.08);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+/* ── 8.5 Tablas ── */
+.admin-table thead th {
+  background-color: #f6faf7;
+  color: #1f2d1f;
+  font-weight: 700;
+  border-bottom: 0;
+}
+
+.admin-table tbody tr {
+  border-color: rgba(25, 135, 84, 0.08);
+}
+
+
+/* ==========================================================================
+   9. LEGADO DE LA PLANTILLA DE VITE
+   Probablemente no los uses (.hero, #center, #next-steps, #docs, #spacer,
+   .ticks, .counter). Si no aparecen en tu JSX, puedes borrar toda esta
+   sección. Dependen de variables (--accent, --border, --text-h...) que no
+   están definidas en tu proyecto.
+   ========================================================================== */
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 

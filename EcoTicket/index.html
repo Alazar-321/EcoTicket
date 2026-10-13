@@ -2,9 +2,24 @@
 <html lang="es-CO">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.png" />
+    <link rel="preload" as="image" href="/slide1.webp" fetchpriority="high" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EcoTíquet | Eventos ecológicos</title>
+    <title>EcoTíquet | Eventos Ecológicos</title>
+    <meta
+      name="description"
+      content="Encuentra, reserva y gestiona tus tickets de eventos ecológicos en EcoTíquet. Entradas digitales con código QR, sin papel."
+    />
+
+    <!-- Aplica el tema guardado antes de pintar, para evitar el parpadeo en modo oscuro -->
+    <script>
+      try {
+        var t =
+          localStorage.getItem('theme') ||
+          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-bs-theme', t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

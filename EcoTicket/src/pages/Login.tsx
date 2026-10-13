@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { login } from '../auth/auth'
+import logo from '../assets/logo_2.webp'
 
 function Login() {
   const navigate = useNavigate()
@@ -47,16 +48,16 @@ function Login() {
             <div className="card shadow border-0 overflow-hidden">
               <div className="row g-0">
                 <div
-                  className="col-md-5 bg-success text-white d-flex flex-column justify-content-center align-items-center p-4 text-center position-relative buscador"
+                  className="col-md-5 bg-success text-white d-flex flex-column justify-content-center align-items-center p-4 text-center position-relative login_card"
                 >
                   <img
-                    src="/src/assets/logo_2.png"
+                    src={logo}
                     alt="Eco Tíquet Logo"
                     height="80"
                     className="mb-3"
                   />
-                  <h3 className="fw-bold mb-2">¡Bienvenido!</h3>
-                  <p className="small mb-0 opacity-10">
+                  <h3 className="fw-bold mb-2 text-shadow">¡Bienvenido!</h3>
+                  <p className="small text-bold mb-0 opacity-10 text-shadow">
                     Gestión sostenible e inteligente para tus tíquets.
                   </p>
                 </div>

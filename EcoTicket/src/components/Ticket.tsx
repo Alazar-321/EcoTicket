@@ -1,7 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
 import type { Reservation } from '../services/ecoTicketService'
 import type { Event } from '../types/event'
-
+import { APP_TIME_ZONE, formatDateOnly } from '../utils/date'
 
 // Por si tu tipo Event no declara estos campos opcionales
 type TicketEvent = Event & { location?: string | null; organizer?: string }
@@ -17,25 +17,21 @@ const currency = new Intl.NumberFormat('es-CO', {
   maximumFractionDigits: 0,
 })
 
-// Las fechas "AAAA-MM-DD" se leen como fecha local para que no se desplacen un día
-function parseDate(value?: string) {
-  if (!value) return null
-  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00` : value)
-  return isNaN(date.getTime()) ? null : date
-}
-
+// Fecha del evento ("AAAA-MM-DD"): se formatea sin que la zona horaria la mueva de día
 function formatEventDate(value?: string) {
-  const date = parseDate(value)
-  return date
-    ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'full' }).format(date)
-    : 'Fecha no disponible'
+  return formatDateOnly(value, { dateStyle: 'full' }) || 'Fecha no disponible'
 }
 
+// Fecha y hora del pago (momento exacto): siempre en hora de Colombia
 function formatPaidDate(value?: string) {
-  const date = parseDate(value)
-  return date
-    ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
-    : '—'
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
+  return new Intl.DateTimeFormat('es-CO', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: APP_TIME_ZONE,
+  }).format(date)
 }
 
 function Ticket({ reservation, event }: Props) {
