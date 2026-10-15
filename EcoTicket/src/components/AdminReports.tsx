@@ -12,6 +12,7 @@ import useEcoTicketData from '../hooks/useEcoTicketData'
 import {
   deleteUser,
   getUsers,
+  deleteEvent,
   type Profile,
   type ReservationStatus,
 } from '../services/ecoTicketService'
@@ -107,6 +108,23 @@ function AdminReports() {
     }
   }
 
+  async function handleDeleteEvent(id: number) {
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas eliminar este evento? Se borrarán también sus reservas. Esta acción no se puede deshacer.`
+    )
+    if (!confirmed) return
+
+    const ok = await deleteEvent(id)
+    if (ok) {
+      setUserNotice({ type: 'success', text: 'El evento fue eliminado correctamente.' })
+    } else {
+      setUserNotice({
+        type: 'danger',
+        text: 'No se pudo eliminar el evento. Comprueba tus permisos.',
+      })
+    }
+  }
+
   // Estadísticas
   const totalEvents = events.length
   const averagePrice =
@@ -144,7 +162,7 @@ function AdminReports() {
     { label: 'Eventos registrados', value: totalEvents, icon: 'bi bi-calendar-event' },
     {
       label: 'Precio promedio',
-      value: `$${averagePrice.toLocaleString('es-CO')}`,
+      value: `$${Math.round(averagePrice).toLocaleString('es-CO')}`,
       icon: 'bi bi-cash-stack',
     },
     { label: 'Reservas recibidas', value: reservations.length, icon: 'bi bi-ticket-perforated' },
@@ -188,9 +206,9 @@ function AdminReports() {
         </div>
 
         {/* ── Gráficas: apiladas hasta escritorio, lado a lado desde lg ── */}
-        <div className="row g-4">
+        <div className="row g-3">
           <div className="report-section col-12 col-lg-6">
-            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
               <h3 className="h5 mb-0 text-dark fw-bold">Eventos por ciudad</h3>
             </div>
 
@@ -201,7 +219,7 @@ function AdminReports() {
                   <XAxis dataKey="city" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={32} tick={{ fontSize: 12 }} />
                   <Tooltip cursor={{ fill: 'rgba(25, 135, 84, 0.05)' }} />
-                  <Bar dataKey="events" name="Eventos" fill="#198754" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="events" name="Eventos" fill="#2296c0" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -219,7 +237,7 @@ function AdminReports() {
                   <XAxis dataKey="status" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={32} tick={{ fontSize: 12 }} />
                   <Tooltip cursor={{ fill: 'rgba(25, 135, 84, 0.05)' }} />
-                  <Bar dataKey="total" name="Reservas" fill="#198754" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="total" name="Reservas" fill="#0f21f0" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -267,6 +285,7 @@ function AdminReports() {
                   <th>Ciudad</th>
                   <th>Fecha</th>
                   <th>Precio</th>
+                  <th><span className="visually-hidden">Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -277,11 +296,21 @@ function AdminReports() {
                     <td>{event.city}</td>
                     <td>{formatEventDate(event.date)}</td>
                     <td>{formatEventPrice(event.price)}</td>
+                    <td className="text-end">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDeleteEvent(event.id!)}
+                        aria-label={`Eliminar ${event.title}`}
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {events.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="text-center text-muted py-4">No hay eventos registrados.</td>
+                    <td colSpan={6} className="text-center text-muted py-4">No hay eventos registrados.</td>
                   </tr>
                 )}
               </tbody>

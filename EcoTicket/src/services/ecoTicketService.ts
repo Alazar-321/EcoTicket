@@ -27,6 +27,20 @@ export async function getEvents(): Promise<Event[]> {
   return data as Event[]
 }
 
+export async function getEventById(id: number): Promise<Event | null> {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    console.error('Error fetching event by id:', error)
+    return null
+  }
+  return data as Event
+}
+
 export async function createEvent(event: Omit<Event, 'id'>): Promise<Event | null> {
   const { data, error } = await supabase
     .from('events')
@@ -82,14 +96,16 @@ export async function getReservations(): Promise<Reservation[]> {
 export async function createReservation(event: Event, customer: string, userId: string): Promise<boolean> {
   if (!event.id) return false
 
-  const { data: existing } = await supabase
+  // Capacidad Check
+  const { count } = await supabase
     .from('reservations')
-    .select('id')
+    .select('*', { count: 'exact', head: true })
     .eq('event_id', event.id)
-    .eq('user_id', userId)
-    .maybeSingle()
 
-  if (existing) return false
+  if (count !== null && event.capacity !== undefined && count >= event.capacity) {
+    console.error('Evento lleno')
+    return false
+  }
 
   const reservation = {
     event_id: event.id,
@@ -211,6 +227,48 @@ type ProfileRow = {
   username: string | null
   full_name: string | null
   role: UserRole
+}
+
+export async function updateEvent(id: number, updates: any): Promise<Event | null> {
+  const { data, error } = await supabase
+    .from('events')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating event:', error)
+    return null
+  }
+
+  window.dispatchEvent(new Event(DATA_CHANGE_EVENT))
+  return data as Event
+}
+
+export async function deleteEvent(id: number): Promise<boolean> {
+  // First, delete associated reservations to avoid foreign key violations
+  const { error: resError } = await supabase
+    .from('reservations')
+    .delete()
+    .eq('event_id', id)
+
+  if (resError) {
+    console.error('Error deleting event reservations:', resError)
+  }
+
+  const { error: eventError } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', id)
+
+  if (eventError) {
+    console.error('Error deleting event:', eventError)
+    return false
+  }
+
+  window.dispatchEvent(new Event(DATA_CHANGE_EVENT))
+  return true
 }
 
 // Lista clientes y agentes (los administradores no se pueden borrar, así que no se listan)

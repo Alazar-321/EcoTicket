@@ -41,3 +41,13 @@ export function nextMonthKey(): string {
   const [y, m] = todayISO().split('-').map(Number)
   return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`
 }
+
+export function formatTime12h(time?: string) {
+  if (!time) return '--'
+  const [hours, minutes] = time.split(':').map(Number)
+  if (isNaN(hours) || isNaN(minutes)) return time
+
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const h12 = hours % 12 || 12
+  return `${h12}:${minutes.toString().padStart(2, '0')} ${period}`
+}

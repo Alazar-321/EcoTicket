@@ -1,6 +1,6 @@
 export default function BannerDigital() {
   return (
-    <section className="banner-digital container py-4" aria-label="Entradas digitales">
+    <section className="banner-digital container py-4 shadow" aria-label="Entradas digitales">
       <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-3 gap-md-4 text-center text-md-start">
         <svg
           className="banner-digital-icon flex-shrink-0"
@@ -30,7 +30,7 @@ export default function BannerDigital() {
 
         <div>
           <h2 className="banner-digital-title mb-1">100% Digital &amp; Zero Paper</h2>
-          <p className="banner-digital-subtitle mb-0">
+          <p className="banner-digital-subtitle mb-3">
             Tu entrada siempre en tu móvil con código QR
           </p>
         </div>

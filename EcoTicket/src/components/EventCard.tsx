@@ -101,24 +101,52 @@ export default function EventCard({
                     </p>
 
                     <dl className="mb-0 text-body-secondary">
-
                         <div className="d-flex align-items-center mb-1">
                             <dt className="me-2">
                                 <i
                                     className="bi bi-geo-alt"
                                     aria-hidden="true"
                                 ></i>
-
                                 <span className="visually-hidden">
                                     Ciudad:
                                 </span>
                             </dt>
-
                             <dd className="mb-0">
                                 {event.city}
                             </dd>
                         </div>
-
+                        {event.location && (
+                            <div className="d-flex align-items-center mb-1">
+                                <dt className="me-2">
+                                    <i
+                                        className="bi bi-pin-map"
+                                        aria-hidden="true"
+                                    ></i>
+                                    <span className="visually-hidden">
+                                        Lugar:
+                                    </span>
+                                </dt>
+                                <dd className="mb-0">
+                                    {event.location}
+                                </dd>
+                            </div>
+                        )}
+                        {event.start_time && event.end_time && (
+                            <div className="d-flex align-items-center mb-1">
+                                <dt className="me-2">
+                                    <i
+                                        className="bi bi-clock"
+                                        aria-hidden="true"
+                                    ></i>
+                                    <span className="visually-hidden">
+                                        Hora:
+                                    </span>
+                                </dt>
+                                <dd className="mb-0">
+                                    {event.start_time} - {event.end_time}
+                                </dd>
+                            </div>
+                        )}
                     </dl>
 
                 </header>

@@ -1,95 +1,88 @@
-# Eco Ticket
+# 🌿 EcoTíquet - Sistema de Gestión de Eventos Ecológicos
 
-Aplicación web para consultar eventos, solicitar reservas y gestionar pagos de
-entradas. Está construida con React, TypeScript, Vite, React Router y Bootstrap.
+Bienvenido a la documentación de **EcoTíquet**, una plataforma diseñada para la creación, gestión y reserva de tickets para eventos enfocados en la sostenibilidad y el medio ambiente.
 
-## Requisitos
+## 🚀 Guía de Implementaciones Recientes (Tutorial)
 
-- Node.js 20.19+ o 22.12+.
-- pnpm. Si no está habilitado, ejecuta `corepack enable`.
+A continuación, se detallan paso a paso las funcionalidades implementadas recientemente, diseñadas para mejorar la experiencia del Agente y el Administrador.
 
-## Instalación y ejecución
+### 1. Gestión Avanzada de Eventos (Panel del Agente)
 
-```bash
-pnpm install
-pnpm run dev
-```
+El panel del agente ha sido evolucionado para permitir no solo la creación, sino también el control total sobre el ciclo de vida de un evento.
 
-Vite mostrará la URL local, normalmente `http://localhost:5173`.
+#### A. Edición de Eventos (Página Dedicada)
 
-## Cuentas de demostración
+Se ha migrado la edición de eventos de un modo "inline" a una página independiente para evitar errores y mejorar la claridad.
 
-| Perfil        | Usuario     | Contraseña |
-| ------------- | ----------- | ----------- |
-| Cliente       | `cliente` | `1234`    |
-| Agente        | `agente`  | `1234`    |
-| Administrador | `admin`   | `1234`    |
+- **Flujo**: `Panel Agente` $\rightarrow$ `Icono Lápiz` $\rightarrow$ `/edit-event/:id`.
+- **Componente**: `src/pages/EditEvent.tsx`.
+- **Funcionamiento**:
+  1. Al entrar, la página usa el ID de la URL para recuperar los datos del evento mediante la nueva función `getEventById`.
+  2. El formulario se pre-rellena con los datos actuales.
+  3. Al guardar, se llama a `updateEvent` y el usuario es redirigido al panel principal.
 
-## Funcionalidades por perfil
+#### B. Eliminación de Eventos
 
-### Cliente
+Tanto el Agente como el Administrador pueden ahora eliminar eventos erróneos o cancelados.
 
-- Consultar y filtrar los eventos disponibles.
-- Solicitar una reserva desde las tarjetas de eventos.
-- Consultar sus reservas y el estado de cada una en `/mis_tickets`.
-- Cuando el Agente confirma una reserva, agregarla al carrito, quitarla o
-  continuar con el pago desde `/carrito`.
-- Consultar el total y confirmar el pago simulado. La reserva cambia a estado
-  `PAGADA` y se elimina del carrito.
+- **Acción**: Botón de papelera ($\text{bi-trash}$) en la tabla de eventos.
+- **Seguridad**: Se implementó un diálogo de confirmación (`window.confirm`) para evitar borrados accidentales.
+- **Lógica de Base de Datos**: El servicio elimina primero todas las reservas asociadas al evento para evitar errores de integridad referencial (Foreign Key) antes de borrar el evento.
 
-### Agente
+#### C. Formato de Horas AM/PM
 
-- Registrar eventos con nombre, ciudad, categoría, fecha, precio, imagen y
-  descripción.
-- Consultar los eventos registrados.
-- Consultar las reservas solicitadas y cambiar su estado a `SOLICITADA`,
-  `CONFIRMADA` o `RECHAZADA`.
-- Las reservas pagadas aparecen como estado final y no se pueden modificar.
+Para mejorar la lectura de los horarios, se implementó un formateador de tiempo.
 
-### Administrador
+- **Utilidad**: `formatTime12h` en `src/utils/date.ts`.
+- **Resultado**: Las horas que en base de datos se guardan como `14:30` ahora se muestran en la interfaz como `2:30 PM`.
 
-- Consultar estadísticas sobre eventos, precios, ciudades y reservas.
-- Revisar gráficas de eventos por ciudad y reservas por estado.
-- Consultar las tablas de eventos y reservas.
+---
 
-## Estados de reserva
+## 🛠️ Arquitectura del Proyecto
 
-`SOLICITADA` → el Cliente pidió la reserva. El Agente puede confirmarla o
-rechazarla. Una reserva `CONFIRMADA` puede agregarse al carrito y pagarse;
-después queda como `PAGADA`.
+### 📁 Estructura de Componentes y Páginas
 
-## Persistencia y pagos
+#### 📄 Páginas (`src/pages/`)
 
-Los eventos, las reservas y el carrito se guardan en `localStorage` del
-navegador. Los datos no se comparten entre navegadores o dispositivos y no hay
-un backend conectado. El checkout es una simulación local: no procesa cargos
-reales ni almacena información financiera.
+- `Home.tsx`: Portada pública con buscador y eventos destacados.
+- `Eventos.tsx`: Catálogo completo de eventos disponibles para el cliente.
+- `Login.tsx` / `RegisterEcoTiquet.tsx`: Gestión de acceso y registro de usuarios.
+- `Mis_tickets.tsx`: Panel del cliente para ver sus reservas.
+- `Carrito.tsx`: Gestión de reservas confirmadas pendientes de pago.
+- `Agente.tsx`: Panel de control para agentes (creación, edición y borrado de eventos).
+- `EditEvent.tsx`: Página dedicada a la modificación de detalles de un evento existente.
+- `Admin.tsx`: Panel de alta jerarquía para reportes y gestión de usuarios.
 
-## Comandos
+#### 🧩 Componentes (`src/components/`)
 
-```bash
-pnpm run dev      # Inicia el servidor de desarrollo
-pnpm run build    # Comprueba TypeScript y genera la versión de producción
-pnpm run lint     # Ejecuta ESLint
-pnpm run preview  # Sirve localmente la compilación de producción
-```
+- `Navbar.tsx`: Navegación inteligente que cambia según el rol del usuario (Cliente, Agente, Admin).
+- `AdminReports.tsx`: Módulo de analítica con gráficas de barras y circulares sobre eventos y reservas.
+- `Slider.tsx`: Carrusel de imágenes destacadas en la página de inicio.
+- `Buscador.tsx`: Filtros avanzados por ciudad, categoría y fecha.
+- `EventCards.tsx`: Renderizado de la lista de eventos en formato de tarjetas.
 
-## Estructura principal
+#### ⚙️ Servicios y Utilidades
 
-```text
-src/
-├── auth/        # Sesión y perfiles de demostración
-├── components/  # Componentes compartidos y reportes
-├── hooks/       # Acceso reactivo a los datos locales
-├── pages/       # Vistas de Cliente, Agente, Administrador y carrito
-├── routes/      # Rutas y control de acceso por perfil
-├── services/    # Persistencia de eventos, reservas y carrito
-└── types/       # Tipos compartidos
-```
+- `src/services/ecoTicketService.ts`: El corazón de la aplicación. Maneja toda la comunicación con **Supabase** (CRUD de eventos, reservas y perfiles).
+- `src/utils/date.ts`: Lógica centralizada para el manejo de fechas y horas en la zona horaria de Colombia.
+- `src/routes/Routes.tsx`: Configuración de rutas protegidas mediante `RoleRoute`, asegurando que solo usuarios autorizados accedan a paneles administrativos.
 
-## Verific
+---
 
-```bash
-pnpm run lint
-pnpm run build
-```
+## 🛠️ Instalación y Ejecución
+
+1. **Instalar dependencias**:
+   ```bash
+   pnpm install
+   ```
+2. **Ejecutar en modo desarrollo**:
+   ```bash
+   pnpm run dev
+   ```
+3. **Acceso**: Abrir el navegador en `http://localhost:5173`.
+
+## 🛡️ Roles de Usuario
+
+- **CLIENTE**: Puede buscar eventos, reservar tickets y gestionar su carrito.
+- **AGENTE**: Puede crear, editar y eliminar eventos, además de gestionar el estado de las reservas.
+- **ADMINISTRADOR**: Tiene acceso a reportes globales del sistema y gestión de cuentas de usuario.

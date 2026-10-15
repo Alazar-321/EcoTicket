@@ -40,7 +40,7 @@ const Navbar = () => {
   const cartCount = (reservations || []).filter(
     (reservation) =>
       reservation.customer === user?.username &&
-      cartReservationIds.includes(reservation.id) &&
+      (cartReservationIds || []).includes(reservation.id) &&
       reservation.status === 'CONFIRMADA'
   ).length
 
@@ -49,8 +49,6 @@ const Navbar = () => {
     navigate('/')
   }
 
-  // El navbar y el logo se pintan siempre (mejora el LCP).
-  // Solo lo que depende de la sesión espera a que termine la comprobación.
 
   return (
     <nav
@@ -113,7 +111,7 @@ const Navbar = () => {
                     className="nav-link text-body-secondary fw-semibold fs-5"
                     to="/mis_tickets"
                   >
-                    Mis Tickets
+                    Mis Tiquets
                   </Link>
                 </li>
                 <li className="nav-item">

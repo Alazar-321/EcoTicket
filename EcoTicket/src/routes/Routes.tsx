@@ -24,6 +24,7 @@ const Mis_tickets = lazy(() => import('../pages/Mis_tickets'))
 const Carrito = lazy(() => import('../pages/Carrito'))
 const Admin = lazy(() => import('../pages/Admin'))
 const Agente = lazy(() => import('../pages/Agente'))
+const EditEvent = lazy(() => import('../pages/EditEvent'))
 const Soporte = lazy(() => import('../pages/Soporte'))
 const Terms = lazy(() => import('../pages/Terms'))
 
@@ -113,6 +114,7 @@ function RouteContent() {
           {/* Solo AGENTE */}
           <Route element={<RoleRoute role="AGENTE" />}>
             <Route path="/agente" element={<Agente />} />
+            <Route path="/edit-event/:id" element={<EditEvent />} />
           </Route>
 
 

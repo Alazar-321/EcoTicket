@@ -6,6 +6,9 @@ export type Event = {
     category: string
     description?: string
     date: string
+    start_time?: string
+    end_time?: string
+    capacity?: number
     day?: string
     month?: string
     weekday?: string
@@ -21,6 +24,9 @@ export type CreateEvent = {
     title?: string
     description?: string
     date: string
+    start_time?: string
+    end_time?: string
+    capacity?: number
     location?: string
     city?: string
     organizer?: string
@@ -34,6 +40,9 @@ export type UpdateEvent = {
     title?: string
     description?: string
     date?: string
+    start_time?: string
+    end_time?: string
+    capacity?: number
     location?: string
     city?: string
     organizer?: string

@@ -7,7 +7,7 @@ export default function GridDestacados({ events }: { events: Event[] }) {
 
   return (
     <section className="container-fluid px-3 px-md-5 py-4" aria-labelledby="featured-title">
-      <h2 id="featured-title" className="mb-3 fs-3 fw-bold">Últimos Eventos</h2>
+      <h2 id="featured-title" className="mb-4 fs-3 fw-bold">Últimos Eventos</h2>
 
       <div className="row g-3">
         <div className="col-12 col-lg-5">

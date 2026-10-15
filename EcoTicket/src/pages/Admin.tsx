@@ -28,7 +28,7 @@ function Admin() {
         </div>
 
         <button
-          className="btn btn-outline-success"
+          className="btn btn-outline-light"
           onClick={() => navigate('/')}
         >
           Ver sitio
