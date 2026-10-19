@@ -56,9 +56,10 @@ function ReservationGraph({ events, reservations }: Props) {
 
   const { nodes, edges, byId, neighbors, height } = useMemo(() => {
     const customers = Array.from(new Set(reservations.map((r) => r.customer)))
-    const cities = Array.from(new Set(events.map((e) => e.city)))
+    const cities = Array.from(new Set(events.map((e) => e.city?.trim()))).filter(Boolean)
     const rows = Math.max(customers.length, events.length, cities.length, 1)
     const height = TOP + rows * ROW_HEIGHT + 16
+
 
     // Centra cada columna verticalmente respecto a la más larga
     const yFor = (count: number, index: number) =>
@@ -92,8 +93,9 @@ function ReservationGraph({ events, reservations }: Props) {
 
     const edges: GraphEdge[] = []
     for (const item of events) {
-      edges.push({ id: `ec:${item.id}`, from: `e:${item.id}`, to: `y:${item.city}` })
+      edges.push({ id: `ec:${item.id}`, from: `e:${item.id}`, to: `y:${item.city?.trim()}` })
     }
+
     for (const reservation of reservations) {
       const eventNode = `e:${reservation.eventId}`
       if (!byId.has(eventNode)) continue

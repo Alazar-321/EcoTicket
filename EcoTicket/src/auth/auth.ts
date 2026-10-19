@@ -50,7 +50,22 @@ export async function login(email: string, password: string): Promise<User | nul
   return loggedUser
 }
 
+export async function resetPasswordRequest(email: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/update-password`,
+  })
+  return { error: error?.message || null }
+}
+
+export async function updatePassword(newPassword: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+  return { error: error?.message || null }
+}
+
 export async function logout() {
+
   await supabase.auth.signOut()
   localStorage.removeItem(STORAGE_KEY)
   window.dispatchEvent(new Event('auth-change'))

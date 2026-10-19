@@ -131,19 +131,26 @@ function AdminReports() {
     totalEvents === 0
       ? 0
       : events.reduce((total, event) => total + Number(event.price ?? 0), 0) / totalEvents
-  const cities = new Set(events.map((event) => event.city))
+
+  // Limpiamos y normalizamos los nombres de las ciudades para evitar duplicados por espacios o mayúsculas
+  const citiesSet = new Set(
+    events.map((event) => event.city?.trim())
+  )
+  const cities = Array.from(citiesSet).filter(Boolean)
+
 
   const eventsByCity = Object.values(
     events.reduce(
       (acc, event) => {
-        if (!acc[event.city]) {
-          acc[event.city] = {
-            city: event.city,
+        const city = event.city?.trim() || 'Sin ciudad'
+        if (!acc[city]) {
+          acc[city] = {
+            city: city,
             events: 0,
           }
         }
 
-        acc[event.city].events += 1
+        acc[city].events += 1
 
         return acc
       },

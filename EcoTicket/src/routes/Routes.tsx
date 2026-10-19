@@ -13,6 +13,8 @@ import Home from '../pages/Home'
 import Eventos from '../pages/Eventos'
 import Login from '../pages/Login'
 import RegisterEcoTiquet from '../pages/RegisterEcoTiquet'
+import ForgotPassword from '../pages/ForgotPassword'
+import UpdatePassword from '../pages/UpdatePassword'
 
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -92,6 +94,9 @@ function RouteContent() {
           <Route path="/soporte" element={<Soporte />} />
 
           <Route path="/login" element={<Login />} />
+
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
 
           <Route path="/register" element={<RegisterEcoTiquet />} />
 

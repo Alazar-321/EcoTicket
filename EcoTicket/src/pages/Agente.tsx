@@ -171,7 +171,7 @@ function Agente() {
   const eventsByCityData = useMemo(() => {
     const counts: Record<string, number> = {}
     events.forEach((e) => {
-      const city = e.city || 'Sin ciudad'
+      const city = e.city?.trim() || 'Sin ciudad'
       counts[city] = (counts[city] || 0) + 1
     })
 

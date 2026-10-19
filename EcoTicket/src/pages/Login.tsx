@@ -104,6 +104,12 @@ function Login() {
                         />
                       </div>
 
+                      <div className="text-end mb-3">
+                        <a href="/forgot-password" className="small text-success text-decoration-none fw-semibold">
+                          ¿Olvidaste tu contraseña?
+                        </a>
+                      </div>
+
                       {error && <div className="alert alert-danger py-2">{error}</div>}
 
                       <button type="submit" className="btn btn-success w-100">
