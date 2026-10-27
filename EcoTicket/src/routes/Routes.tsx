@@ -106,6 +106,7 @@ function RouteContent() {
           <Route element={<RoleRoute role="CLIENTE" />}>
             <Route path="/mis_tickets" element={<Mis_tickets />} />
             <Route path="/carrito" element={<Carrito />} />
+            
           </Route>
 
 

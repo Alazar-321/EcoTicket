@@ -1,20 +1,14 @@
 import { useState, useEffect } from 'react'
 import type { Event } from '../types/event'
-import { getCurrentUser } from '../auth/auth'
-import {
-  createReservation,
-  createSeatReservations,
-  getZonesByEventIds,
-} from '../services/ecoTicketService'
-import type { EventZone, SeatSelection } from '../utils/seating'
+import { getZonesByEventIds } from '../services/ecoTicketService'
+import type { EventZone } from '../utils/seating'
 import EventCard from './EventCard'
-import EventDetailModal from './EventDetailModal'
 import EventCardSkeleton from './EventCardSkeleton'
-import { useNavigate } from 'react-router-dom'
 import Pagination from './Pagination'
 
 import usePagination from '../hooks/usePagination'
 import useEcoTicketData from '../hooks/useEcoTicketData'
+import useEventModal from '../hooks/useEventModal'
 
 const PAGE_SIZE = 8
 
@@ -25,22 +19,17 @@ type EventCardsProps = {
 }
 
 export default function EventCards({ filteredEvents, resetKey, isLoading = false }: EventCardsProps) {
-  const navigate = useNavigate()
   const { reservations } = useEcoTicketData()
-  const [user, setUser] = useState<any>(null)
-  // Categorías de boletería de los eventos de la página actual, y evento abierto en el modal
+  // Modal de detalle (compartido con los destacados) y usuario con sesión
+  const { user, openEvent, reserveByQuantity, modal } = useEventModal()
+  // Categorías de boletería de los eventos de la página actual (para mostrar "Desde $X" en la tarjeta)
   const [zonesByEvent, setZonesByEvent] = useState<Record<number, EventZone[]>>({})
-  const [openEvent, setOpenEvent] = useState<Event | null>(null)
 
   const { pageItems, page, totalPages, setPage } = usePagination(
     filteredEvents,
     PAGE_SIZE,
     resetKey ?? filteredEvents.length
   )
-
-  useEffect(() => {
-    getCurrentUser().then(setUser)
-  }, [])
 
   // Una sola consulta con las categorías de todos los eventos visibles
   const visibleIds = pageItems.map((event) => event.id).filter((id): id is number => id != null)
@@ -60,51 +49,6 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
   const handlePageChange = (p: number) => {
     setPage(p)
     document.getElementById('eventos')?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  // quantity es la cantidad de boletos que eligió el cliente en la tarjeta
-  const handleReserve = async (event: Event, quantity: number) => {
-    if (!user) {
-      navigate('/register')
-      return
-    }
-
-    try {
-      const success = await createReservation(event, user.username, user.id, quantity)
-      if (success) {
-        alert(
-          quantity > 1
-            ? `¡${quantity} reservas solicitadas con éxito! Puedes seguir el estado en "Mis Tickets".`
-            : '¡Reserva solicitada con éxito! Puedes seguir el estado en "Mis Tickets".'
-        )
-        navigate('/mis_tickets')
-      } else {
-        alert('No se pudo realizar la reserva: el evento no admite reservas o no hay cupos suficientes.')
-      }
-    } catch (error) {
-      console.error('Error making reservation:', error)
-      alert('Ocurrió un error al intentar reservar')
-    }
-  }
-
-  // Reserva los asientos elegidos en el plano; si sale bien, igual que antes: aviso y a "Mis tickets"
-  const handleReserveSeats = async (event: Event, seats: SeatSelection[]) => {
-    if (!user) {
-      navigate('/register')
-      return { ok: false }
-    }
-
-    const result = await createSeatReservations(event, user.username, user.id, seats)
-    if (result.ok) {
-      setOpenEvent(null)
-      alert(
-        seats.length > 1
-          ? `¡${seats.length} asientos solicitados con éxito! Puedes seguir el estado en "Mis Tickets".`
-          : '¡Asiento solicitado con éxito! Puedes seguir el estado en "Mis Tickets".'
-      )
-      navigate('/mis_tickets')
-    }
-    return result
   }
 
   return (
@@ -152,8 +96,8 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
                   canReserve={user?.role === 'CLIENTE'}
                   showLoginCta={!user}
                   isReserved={isReserved}
-                  onReserve={(quantity) => handleReserve(event, quantity)}
-                  onOpen={() => setOpenEvent(event)}
+                  onReserve={(quantity) => reserveByQuantity(event, quantity)}
+                  onOpen={() => openEvent(event)}
                   hasSeating={hasSeating}
                   priceFrom={hasSeating ? Math.min(...zones.map((zone) => zone.price)) : undefined}
                 />
@@ -172,19 +116,7 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
       )}
 
-      {openEvent && (
-        <EventDetailModal
-          event={openEvent}
-          zones={openEvent.id != null ? zonesByEvent[openEvent.id] ?? [] : []}
-          user={user}
-          onClose={() => setOpenEvent(null)}
-          onReserveSeats={(seats) => handleReserveSeats(openEvent, seats)}
-          onReserveQuantity={async (quantity) => {
-            setOpenEvent(null)
-            await handleReserve(openEvent, quantity)
-          }}
-        />
-      )}
+      {modal}
     </section>
   )
 }

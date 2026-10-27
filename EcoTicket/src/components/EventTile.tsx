@@ -1,9 +1,9 @@
 import type { Event } from '../types/event'
 import { dateOnlyToDate, formatDateOnly } from '../utils/date'
 
-type Props = { event: Event; featured?: boolean }
+type Props = { event: Event; featured?: boolean; onOpen?: () => void }
 
-export default function EventTile({ event, featured = false }: Props) {
+export default function EventTile({ event, featured = false, onOpen }: Props) {
   // La fecha es "YYYY-MM-DD": se formatea sin que la zona horaria la mueva de día
   const valid = Boolean(dateOnlyToDate(event.date))
 
@@ -12,8 +12,25 @@ export default function EventTile({ event, featured = false }: Props) {
   const weekday = valid ? formatDateOnly(event.date, { weekday: 'short' }).replace('.', '') : ''
   const dateLabel = valid ? formatDateOnly(event.date, { dateStyle: 'long' }) : 'Fecha no disponible'
 
+  // Si recibe onOpen, toda la tarjeta se comporta como un botón (clic, Enter o Espacio)
+  const interactive = onOpen
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        style: { cursor: 'pointer' },
+        'aria-label': `Ver detalles de ${event.title}`,
+        onClick: onOpen,
+        onKeyDown: (e: React.KeyboardEvent<HTMLElement>) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onOpen()
+          }
+        },
+      }
+    : {}
+
   return (
-    <article className="event-tile bg-body-tertiary rounded-2 p-3 h-100 d-flex flex-column">
+    <article className="event-tile bg-body-tertiary rounded-2 p-3 h-100 d-flex flex-column" {...interactive}>
       <div className={`event-tile-media ${featured ? 'is-featured' : 'ratio ratio-1x1'}`}>
         <img
           src={event.image}
