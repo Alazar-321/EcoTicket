@@ -5,9 +5,12 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './index.css'
 import App from './App.tsx'
+import { EcoTicketDataProvider } from './context/EcoTicketDataContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <EcoTicketDataProvider>
+      <App />
+    </EcoTicketDataProvider>
   </StrictMode>,
 )
