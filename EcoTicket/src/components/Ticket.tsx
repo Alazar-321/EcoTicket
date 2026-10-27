@@ -1,7 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
 import type { Reservation } from '../services/ecoTicketService'
 import type { Event } from '../types/event'
-import { APP_TIME_ZONE, formatDateOnly } from '../utils/date'
+// import './Ticket.css'
 
 // Por si tu tipo Event no declara estos campos opcionales
 type TicketEvent = Event & { location?: string | null; organizer?: string }
@@ -17,21 +17,25 @@ const currency = new Intl.NumberFormat('es-CO', {
   maximumFractionDigits: 0,
 })
 
-// Fecha del evento ("AAAA-MM-DD"): se formatea sin que la zona horaria la mueva de día
-function formatEventDate(value?: string) {
-  return formatDateOnly(value, { dateStyle: 'full' }) || 'Fecha no disponible'
+// Las fechas "AAAA-MM-DD" se leen como fecha local para que no se desplacen un día
+function parseDate(value?: string) {
+  if (!value) return null
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00` : value)
+  return isNaN(date.getTime()) ? null : date
 }
 
-// Fecha y hora del pago (momento exacto): siempre en hora de Colombia
+function formatEventDate(value?: string) {
+  const date = parseDate(value)
+  return date
+    ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'full' }).format(date)
+    : 'Fecha no disponible'
+}
+
 function formatPaidDate(value?: string) {
-  if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return new Intl.DateTimeFormat('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: APP_TIME_ZONE,
-  }).format(date)
+  const date = parseDate(value)
+  return date
+    ? new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+    : '—'
 }
 
 function Ticket({ reservation, event }: Props) {
@@ -46,6 +50,10 @@ function Ticket({ reservation, event }: Props) {
   const priceText = price === 0 ? 'Gratis' : currency.format(price)
   const eventDate = formatEventDate(ticketEvent?.date)
   const paidAt = formatPaidDate(reservation.paidAt)
+  // Categoría y asiento (solo en eventos con plano de asientos)
+  const seatText = reservation.seatLabel
+    ? `${reservation.zoneName ? `${reservation.zoneName} · ` : ''}Asiento ${reservation.seatLabel}`
+    : ''
 
   // Texto legible: cualquier lector de QR del móvil mostrará la información del ticket
   const qrValue = [
@@ -55,6 +63,7 @@ function Ticket({ reservation, event }: Props) {
     `Fecha: ${eventDate}`,
     `Ciudad: ${city}`,
     place ? `Lugar: ${place}` : null,
+    seatText ? `Ubicación: ${seatText}` : null,
     organizer ? `Organiza: ${organizer}` : null,
     `Cliente: ${reservation.customer}`,
     `Valor: ${priceText}`,
@@ -88,6 +97,12 @@ function Ticket({ reservation, event }: Props) {
             <div>
               <dt>Organiza</dt>
               <dd>{organizer}</dd>
+            </div>
+          )}
+          {seatText && (
+            <div>
+              <dt>Ubicación</dt>
+              <dd>{seatText}</dd>
             </div>
           )}
           <div>

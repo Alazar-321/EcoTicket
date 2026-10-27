@@ -1,20 +1,25 @@
-import { useEffect, useState, FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getEventById, updateEvent } from '../services/ecoTicketService'
+import { getEventById, getEventZones, saveEventZones, updateEvent } from '../services/ecoTicketService'
+import { validateZones, type EventZone } from '../utils/seating'
+import ZonesEditor from '../components/ZonesEditor'
 import type { Event } from '../types/event'
+import { EVENT_STATUSES, EVENT_STATUS_BADGE, eventCode, type EventStatus } from '../utils/eventStatus'
 
 export default function EditEvent() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [event, setEvent] = useState<Event | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [zones, setZones] = useState<EventZone[]>([])
   const [notice, setNotice] = useState<{ type: 'success' | 'danger'; text: string } | null>(null)
 
   useEffect(() => {
     async function loadEvent() {
       if (!id) return
-      const data = await getEventById(Number(id))
+      const [data, eventZones] = await Promise.all([getEventById(Number(id)), getEventZones(Number(id))])
       setEvent(data)
+      setZones(eventZones)
       setIsLoading(false)
     }
     loadEvent()
@@ -27,6 +32,7 @@ export default function EditEvent() {
 
     const updates = {
       title: String(formData.get('title')),
+      organizer: String(formData.get('organizer') ?? '').trim() || event?.organizer || 'Eco Ticket',
       city: String(formData.get('city')),
       category: String(formData.get('category')),
       description: String(formData.get('description')),
@@ -37,12 +43,28 @@ export default function EditEvent() {
       location: String(formData.get('location')),
       image: String(formData.get('image')),
       price: Number(formData.get('price')),
+      // Si no se indica fecha de fin, el evento termina el mismo día en que empieza
+      end_date: String(formData.get('end_date') || formData.get('date')),
+      notes: String(formData.get('notes') ?? '').trim(),
+      status: String(formData.get('status') || 'PROGRAMADO') as EventStatus,
     }
 
     if (!id) return
 
+    // Las categorías se validan antes de tocar el evento
+    const zonesError = zones.length > 0 ? validateZones(zones) : null
+    if (zonesError) {
+      setNotice({ type: 'danger', text: zonesError })
+      return
+    }
+
     const success = await updateEvent(Number(id), updates)
     if (success) {
+      const savedZones = await saveEventZones(Number(id), zones)
+      if (!savedZones.ok) {
+        setNotice({ type: 'danger', text: `El evento se actualizó, pero las categorías no: ${savedZones.message}` })
+        return
+      }
       navigate('/agente')
     } else {
       setNotice({ type: 'danger', text: 'Hubo un error al actualizar el evento.' })
@@ -84,7 +106,9 @@ export default function EditEvent() {
             >
               <i className="bi bi-arrow-left"></i> Volver
             </button>
-            <h2 className="h4 text-light fw-bold mb-0">Editar Evento</h2>
+            <h2 className="h4 text-light fw-bold mb-0">
+              Editar Evento <small className="fs-6 text-light-emphasis">{eventCode(event.id)}</small>
+            </h2>
           </div>
 
           {notice && (
@@ -102,6 +126,17 @@ export default function EditEvent() {
                     name="title"
                     className="form-control"
                     defaultValue={event.title}
+                    required
+                    maxLength={100}
+                  />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Organiza</label>
+                  <input
+                    name="organizer"
+                    className="form-control"
+                    defaultValue={event.organizer}
                     required
                     maxLength={100}
                   />
@@ -148,23 +183,34 @@ export default function EditEvent() {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">Hora de Inicio</label>
+                  <label className="form-label">Hora de inicio</label>
                   <input
                     name="start_time"
                     type="time"
                     className="form-control"
-                    defaultValue={event.start_time}
+                    defaultValue={event.start_time ?? ''}
                     required
                   />
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">Hora de Fin</label>
+                  <label className="form-label">Fecha de fin</label>
+                  <input
+                    name="end_date"
+                    type="date"
+                    className="form-control"
+                    defaultValue={event.end_date ?? event.date}
+                  />
+                  <div className="form-text">Vacía = termina el mismo día.</div>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">Hora estimada de fin</label>
                   <input
                     name="end_time"
                     type="time"
                     className="form-control"
-                    defaultValue={event.end_time}
+                    defaultValue={event.end_time ?? ''}
                     required
                   />
                 </div>
@@ -195,7 +241,7 @@ export default function EditEvent() {
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label">Lugar / Dirección</label>
+                  <label className="form-label">Teatro / Lugar</label>
                   <input
                     name="location"
                     className="form-control"
@@ -217,6 +263,22 @@ export default function EditEvent() {
                   />
                 </div>
 
+                <div className="col-md-6">
+                  <label className="form-label">Estado</label>
+                  <select
+                    name="status"
+                    className="form-select"
+                    required
+                    defaultValue={event.status ?? 'PROGRAMADO'}
+                  >
+                    {EVENT_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {EVENT_STATUS_BADGE[status].label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="col-12">
                   <label className="form-label">Descripción</label>
                   <textarea
@@ -226,6 +288,22 @@ export default function EditEvent() {
                     required
                     defaultValue={event.description}
                   />
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label">Observaciones</label>
+                  <textarea
+                    name="notes"
+                    className="form-control"
+                    rows={2}
+                    maxLength={500}
+                    placeholder="Opcional. Ej. Puertas abren 1 hora antes"
+                    defaultValue={event.notes ?? ''}
+                  />
+                </div>
+
+                <div className="col-12">
+                  <ZonesEditor value={zones} onChange={setZones} basePrice={Number(event.price ?? 0)} />
                 </div>
 
                 <div className="col-12 d-flex gap-2 mt-4">

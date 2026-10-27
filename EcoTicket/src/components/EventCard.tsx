@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Event } from '../types/event'
 import { Link } from 'react-router-dom'
 import { dateOnlyToDate, formatDateOnly } from '../utils/date'
@@ -7,7 +8,13 @@ export type EventCardProps = {
     canReserve?: boolean
     showLoginCta?: boolean
     isReserved?: boolean
-    onReserve?: () => void
+    onReserve?: (quantity: number) => void
+    // Abre el modal con la información completa del evento
+    onOpen?: () => void
+    // El evento tiene categorías y plano de asientos: se reserva desde el modal
+    hasSeating?: boolean
+    // Precio más bajo entre las categorías (solo con plano)
+    priceFrom?: number
 }
 
 export default function EventCard({
@@ -16,7 +23,12 @@ export default function EventCard({
     showLoginCta = false,
     isReserved = false,
     onReserve,
+    onOpen,
+    hasSeating = false,
+    priceFrom,
 }: EventCardProps) {
+    const [quantity, setQuantity] = useState(1)
+
     // La fecha del evento es "YYYY-MM-DD": se formatea sin que la zona horaria la mueva de día
     const isValidDate = Boolean(dateOnlyToDate(event.date))
 
@@ -30,7 +42,7 @@ export default function EventCard({
         ? formatDateOnly(event.date, { dateStyle: 'long' })
         : ''
 
-    const numericPrice = Number(event.price ?? 0)
+    const numericPrice = Number(hasSeating && priceFrom != null ? priceFrom : event.price ?? 0)
 
     const formattedPrice =
         numericPrice === 0
@@ -44,6 +56,8 @@ export default function EventCard({
     return (
         <article
             className="card h-100 overflow-hidden rounded-3 border-0 shadow-sm event-card"
+            style={onOpen ? { cursor: 'pointer' } : undefined}
+            onClick={onOpen}
         >
             <div className="position-relative">
                 <img
@@ -86,7 +100,23 @@ export default function EventCard({
                 <header className="flex-grow-1">
 
                     <h3 className="h6 mb-2 fw-bold text-body text-uppercase">
-                        {event.title}
+                        {onOpen ? (
+                            // Botón real para poder abrir el detalle con el teclado
+                            <button
+                                type="button"
+                                className="btn btn-link p-0 border-0 text-start text-body text-uppercase fw-bold text-decoration-none"
+                                style={{ font: 'inherit' }}
+                                aria-label={`Ver detalles de ${event.title}`}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    onOpen()
+                                }}
+                            >
+                                {event.title}
+                            </button>
+                        ) : (
+                            event.title
+                        )}
                     </h3>
 
                     <p className="mb-2 text-body-secondary">
@@ -147,13 +177,29 @@ export default function EventCard({
                                 </dd>
                             </div>
                         )}
+                        {event.capacity && (
+                            <div className="d-flex align-items-center mb-1">
+                                <dt className="me-2">
+                                    <i
+                                        className="bi bi-people"
+                                        aria-hidden="true"
+                                    ></i>
+                                    <span className="visually-hidden">
+                                        Capacidad:
+                                    </span>
+                                </dt>
+                                <dd className="mb-0">
+                                    {event.capacity} cupos
+                                </dd>
+                            </div>
+                        )}
                     </dl>
 
                 </header>
 
                 <dl className="mb-0 d-flex justify-content-between align-items-center pt-2 border-top">
                     <dt className="text-body-secondary small fw-normal">
-                        Precio
+                        {hasSeating ? 'Desde' : 'Precio unitario'}
                     </dt>
 
                     <dd
@@ -167,21 +213,65 @@ export default function EventCard({
                     </dd>
                 </dl>
 
-                {canReserve && (
+                {canReserve && hasSeating && (
                     <button
                         type="button"
                         className="btn btn-success w-100 mt-2"
-                        onClick={onReserve}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            onOpen?.()
+                        }}
+                    >
+                        <i className="bi bi-grid-3x3-gap me-2" aria-hidden="true"></i>
+                        Elegir asientos
+                    </button>
+                )}
+
+                {canReserve && !hasSeating && (
+                    <div
+                        className="d-flex align-items-center gap-2 mb-3 mt-2"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex-grow-1">
+                            <label htmlFor={`qty-${event.id}`} className="small fw-semibold text-muted mb-1 d-block">
+                                Cantidad
+                            </label>
+                            <input
+                                id={`qty-${event.id}`}
+                                type="number"
+                                className="form-control form-control-sm"
+                                value={quantity}
+                                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                min="1"
+                            />
+                        </div>
+                        <div className="text-end" style={{ minWidth: '90px' }}>
+                            <span className="text-muted small d-block">Total</span>
+                            <span className="fw-bold text-success">
+                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(numericPrice * quantity)}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {canReserve && !hasSeating && (
+                    <button
+                        type="button"
+                        className="btn btn-success w-100"
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            if (onReserve) onReserve(quantity);
+                        }}
                         disabled={isReserved}
                         aria-label={
                             isReserved
                                 ? `Reserva solicitada para ${event.title}`
-                                : `Reservar el evento ${event.title}`
+                                : `Reservar ${quantity} boleto(s) para el evento ${event.title}`
                         }
                     >
                         {isReserved
                             ? 'Reserva solicitada'
-                            : 'Reservar evento'}
+                            : `Reservar ${quantity} boleto(s)`}
                     </button>
                 )}
 
@@ -189,6 +279,7 @@ export default function EventCard({
                     <Link
                         to="/login"
                         className="btn btn-outline-success w-100 mt-2"
+                        onClick={(e) => e.stopPropagation()}
                     >
                         Inicia sesión para reservar
                     </Link>

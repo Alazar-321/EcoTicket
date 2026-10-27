@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState, useEffect } from 'react'
 import {
-  BrowserRouter,
   Routes,
   Route,
   Navigate,
@@ -16,8 +15,8 @@ import RegisterEcoTiquet from '../pages/RegisterEcoTiquet'
 import ForgotPassword from '../pages/ForgotPassword'
 import UpdatePassword from '../pages/UpdatePassword'
 
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import Navbar from '../components/navbar'
+import Footer from '../components/footer'
 
 import { getCurrentUser, type User } from '../auth/auth'
 
@@ -136,9 +135,7 @@ function RouteContent() {
 
 const RoutesApp = () => {
   return (
-    <BrowserRouter>
-      <RouteContent />
-    </BrowserRouter>
+    <RouteContent />
   )
 }
 

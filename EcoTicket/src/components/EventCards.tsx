@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react'
 import type { Event } from '../types/event'
 import { getCurrentUser } from '../auth/auth'
-import { createReservation } from '../services/ecoTicketService'
+import {
+  createReservation,
+  createSeatReservations,
+  getZonesByEventIds,
+} from '../services/ecoTicketService'
+import type { EventZone, SeatSelection } from '../utils/seating'
 import EventCard from './EventCard'
+import EventDetailModal from './EventDetailModal'
 import EventCardSkeleton from './EventCardSkeleton'
 import { useNavigate } from 'react-router-dom'
 import Pagination from './Pagination'
@@ -22,6 +28,9 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
   const navigate = useNavigate()
   const { reservations } = useEcoTicketData()
   const [user, setUser] = useState<any>(null)
+  // Categorías de boletería de los eventos de la página actual, y evento abierto en el modal
+  const [zonesByEvent, setZonesByEvent] = useState<Record<number, EventZone[]>>({})
+  const [openEvent, setOpenEvent] = useState<Event | null>(null)
 
   const { pageItems, page, totalPages, setPage } = usePagination(
     filteredEvents,
@@ -33,29 +42,69 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
     getCurrentUser().then(setUser)
   }, [])
 
+  // Una sola consulta con las categorías de todos los eventos visibles
+  const visibleIds = pageItems.map((event) => event.id).filter((id): id is number => id != null)
+  const visibleIdsKey = visibleIds.join(',')
+
+  useEffect(() => {
+    let active = true
+    getZonesByEventIds(visibleIds).then((zones) => {
+      if (active) setZonesByEvent((prev) => ({ ...prev, ...zones }))
+    })
+    return () => {
+      active = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleIdsKey])
+
   const handlePageChange = (p: number) => {
     setPage(p)
     document.getElementById('eventos')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleReserve = async (event: Event) => {
+  // quantity es la cantidad de boletos que eligió el cliente en la tarjeta
+  const handleReserve = async (event: Event, quantity: number) => {
     if (!user) {
       navigate('/register')
       return
     }
 
     try {
-      const success = await createReservation(event, user.username, user.id)
+      const success = await createReservation(event, user.username, user.id, quantity)
       if (success) {
-        alert('¡Reserva solicitada con éxito! Puedes seguir el estado en "Mis Tickets".')
+        alert(
+          quantity > 1
+            ? `¡${quantity} reservas solicitadas con éxito! Puedes seguir el estado en "Mis Tickets".`
+            : '¡Reserva solicitada con éxito! Puedes seguir el estado en "Mis Tickets".'
+        )
         navigate('/mis_tickets')
       } else {
-        alert('Ya tienes una reserva para este evento')
+        alert('No se pudo realizar la reserva: el evento no admite reservas o no hay cupos suficientes.')
       }
     } catch (error) {
       console.error('Error making reservation:', error)
       alert('Ocurrió un error al intentar reservar')
     }
+  }
+
+  // Reserva los asientos elegidos en el plano; si sale bien, igual que antes: aviso y a "Mis tickets"
+  const handleReserveSeats = async (event: Event, seats: SeatSelection[]) => {
+    if (!user) {
+      navigate('/register')
+      return { ok: false }
+    }
+
+    const result = await createSeatReservations(event, user.username, user.id, seats)
+    if (result.ok) {
+      setOpenEvent(null)
+      alert(
+        seats.length > 1
+          ? `¡${seats.length} asientos solicitados con éxito! Puedes seguir el estado en "Mis Tickets".`
+          : '¡Asiento solicitado con éxito! Puedes seguir el estado en "Mis Tickets".'
+      )
+      navigate('/mis_tickets')
+    }
+    return result
   }
 
   return (
@@ -84,8 +133,12 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
 
         {!isLoading &&
           pageItems.map((event) => {
+            const zones = event.id != null ? zonesByEvent[event.id] ?? [] : []
+            const hasSeating = zones.length > 0
+            // En eventos con asientos se pueden hacer varias reservas, así que nunca se bloquea la tarjeta
             const isReserved = Boolean(
-              user &&
+              !hasSeating &&
+                user &&
                 reservations.some(
                   (reservation) =>
                     reservation.eventId === event.id && reservation.customer === user.username
@@ -99,7 +152,10 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
                   canReserve={user?.role === 'CLIENTE'}
                   showLoginCta={!user}
                   isReserved={isReserved}
-                  onReserve={() => handleReserve(event)}
+                  onReserve={(quantity) => handleReserve(event, quantity)}
+                  onOpen={() => setOpenEvent(event)}
+                  hasSeating={hasSeating}
+                  priceFrom={hasSeating ? Math.min(...zones.map((zone) => zone.price)) : undefined}
                 />
               </div>
             )
@@ -114,6 +170,20 @@ export default function EventCards({ filteredEvents, resetKey, isLoading = false
 
       {!isLoading && (
         <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
+      )}
+
+      {openEvent && (
+        <EventDetailModal
+          event={openEvent}
+          zones={openEvent.id != null ? zonesByEvent[openEvent.id] ?? [] : []}
+          user={user}
+          onClose={() => setOpenEvent(null)}
+          onReserveSeats={(seats) => handleReserveSeats(openEvent, seats)}
+          onReserveQuantity={async (quantity) => {
+            setOpenEvent(null)
+            await handleReserve(openEvent, quantity)
+          }}
+        />
       )}
     </section>
   )

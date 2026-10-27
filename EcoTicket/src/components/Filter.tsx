@@ -22,7 +22,7 @@ const groups: FilterGroup[] = [
   {
     key: 'category',
     title: 'Categorías',
-    options: ['Conciertos', 'Running', 'Bricolaje', 'Festivales','Medio ambiente',"Teatro"],
+    options: ['Conciertos', 'Running', 'Bricolaje', 'Festival','Medio ambiente',"Teatro"],
   },
 ]
 

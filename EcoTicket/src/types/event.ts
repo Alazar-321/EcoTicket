@@ -1,52 +1,42 @@
+import type { EventStatus } from '../utils/eventStatus'
+
+
 export type Event = {
-    id?: number
+    id?: number;
+    title: string;
+    organizer: string;
+    city: string;
+    category: string;
+    description?: string;
+    date: string;
+    image: string;
+    location?: string;
+    price?: number;
+    capacity?: number;
+    created_by?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
+    end_date?: string | null;
+    notes?: string | null;
+    status?: EventStatus
+}
+
+export type CreateEvent = {
     title: string
     organizer: string
     city: string
     category: string
     description?: string
     date: string
-    start_time?: string
-    end_time?: string
-    capacity?: number
-    day?: string
-    month?: string
-    weekday?: string
+    start_time: string
+    end_time: string
+    capacity: number
+    location: string
     image: string
-    location?: string
-    price?: number
-    name?: string
-    created_at?: string
+    price: number
+    end_date?: string | null
+    notes?: string | null
+    status?: EventStatus
 }
 
-export type CreateEvent = {
-    name?: string
-    title?: string
-    description?: string
-    date: string
-    start_time?: string
-    end_time?: string
-    capacity?: number
-    location?: string
-    city?: string
-    organizer?: string
-    price?: number | string
-    image?: string
-    category?: string
-}
-
-export type UpdateEvent = {
-    name?: string
-    title?: string
-    description?: string
-    date?: string
-    start_time?: string
-    end_time?: string
-    capacity?: number
-    location?: string
-    city?: string
-    organizer?: string
-    price?: number | string
-    image?: string
-    category?: string
-}
+export type UpdateEvent = Partial<Omit<CreateEvent, 'title'>> & { title?: string }

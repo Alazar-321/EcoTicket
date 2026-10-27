@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import Buscador, { type SearchFilters } from '../components/Buscador'
+import Buscador, { type SearchFilters } from '../components/buscador'
 import EventCards from '../components/EventCards'
 import GridDestacados from '../components/GridDestacados'
 import useEcoTicketData from '../hooks/useEcoTicketData'
-import Slider, { type SlideItem } from '../components/Slider'
+import Slider, { type SlideItem } from '../components/slider'
 import BannerDigital from '../components/Banners'
 import { todayISO } from '../utils/date'
 

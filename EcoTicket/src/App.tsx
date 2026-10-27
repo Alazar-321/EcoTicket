@@ -1,12 +1,15 @@
 import './App.css'
+import { BrowserRouter } from 'react-router-dom'
 import RoutesApp from './routes/Routes'
 import { EcoTicketDataProvider } from './context/EcoTicketDataContext'
 
 function App() {
   return (
-    <EcoTicketDataProvider>
-      <RoutesApp />
-    </EcoTicketDataProvider>
+    <BrowserRouter>
+      <EcoTicketDataProvider>
+        <RoutesApp />
+      </EcoTicketDataProvider>
+    </BrowserRouter>
   )
 }
 

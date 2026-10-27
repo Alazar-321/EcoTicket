@@ -55,10 +55,11 @@ function ReservationGraph({ events, reservations }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const { nodes, edges, byId, neighbors, height } = useMemo(() => {
-    const customers = Array.from(new Set(reservations.map((r) => r.customer)))
+    const customers = Array.from(new Set(reservations.map((r) => r.user_id))).filter(Boolean)
     const cities = Array.from(new Set(events.map((e) => e.city?.trim()))).filter(Boolean)
     const rows = Math.max(customers.length, events.length, cities.length, 1)
     const height = TOP + rows * ROW_HEIGHT + 16
+
 
 
     // Centra cada columna verticalmente respecto a la más larga
@@ -66,13 +67,16 @@ function ReservationGraph({ events, reservations }: Props) {
       TOP + ((rows - count) * ROW_HEIGHT) / 2 + index * ROW_HEIGHT + ROW_HEIGHT / 2
 
     const nodes: GraphNode[] = [
-      ...customers.map((name, i) => ({
-        id: `c:${name}`,
-        label: name,
-        kind: 'customer' as const,
-        x: COLUMN_X.customer,
-        y: yFor(customers.length, i),
-      })),
+      ...customers.map((userId, i) => {
+        const res = reservations.find(r => r.user_id === userId)
+        return {
+          id: `c:${userId}`,
+          label: res?.customer || userId || 'Usuario',
+          kind: 'customer' as const,
+          x: COLUMN_X.customer,
+          y: yFor(customers.length, i),
+        }
+      }),
       ...events.map((item, i) => ({
         id: `e:${item.id}`,
         label: item.title,
@@ -101,7 +105,7 @@ function ReservationGraph({ events, reservations }: Props) {
       if (!byId.has(eventNode)) continue
       edges.push({
         id: `r:${reservation.id}`,
-        from: `c:${reservation.customer}`,
+        from: `c:${reservation.user_id}`,
         to: eventNode,
         status: reservation.status,
       })

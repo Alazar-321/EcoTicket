@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getCurrentUser } from '../auth/auth'
 import useEcoTicketData from '../hooks/useEcoTicketData'
 import { payForCart, removeReservationFromCart, type Reservation } from '../services/ecoTicketService'
@@ -14,15 +14,26 @@ function formatPrice(value: number) {
 }
 
 function Carrito() {
+  const navigate = useNavigate()
   const [user, setUser] = useState<any>(null)
   const { events, reservations, cartReservationIds } = useEcoTicketData()
   const [paymentComplete, setPaymentComplete] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   // Ids de las reservas pagadas en esta compra: con ellos se generan los tickets
   const [purchasedIds, setPurchasedIds] = useState<Reservation['id'][]>([])
+
+
 
   useEffect(() => {
     getCurrentUser().then(setUser)
   }, [])
+
+  // Mientras el modal de felicitaciones está abierto, la página de fondo no hace scroll
+  useEffect(() => {
+    if (!showSuccessModal) return
+    document.body.classList.add('modal-open')
+    return () => document.body.classList.remove('modal-open')
+  }, [showSuccessModal])
 
   const cartItems = reservations.filter(
     (reservation) =>
@@ -43,15 +54,24 @@ function Carrito() {
 
   async function handlePayment() {
     if (user) {
-      // Se guardan los ids antes de pagar: al pagar, el carrito se vacía
       const idsToPay = cartItems.map((item) => item.id)
-      const success = await payForCart(user.username)
-      if (success) {
-        setPurchasedIds(idsToPay)
-        setPaymentComplete(true)
+
+      try {
+        const success = await payForCart(user.username)
+        if (success) {
+          // Forzamos un evento de cambio de datos adicional para despertar al contexto
+          window.dispatchEvent(new Event('eco-ticket-data-change'))
+
+          setPurchasedIds(idsToPay)
+          setPaymentComplete(true)
+          setShowSuccessModal(true)
+        }
+      } catch (error) {
+        console.error('Error en el proceso de pago:', error)
       }
     }
   }
+
 
   if (!user) return <div className="container py-5 text-center">Cargando perfil...</div>
 
@@ -65,6 +85,53 @@ function Carrito() {
         </div>
         <Link to="/mis_tickets" className="btn btn-outline-success">Volver a mis reservas</Link>
       </div>
+
+      {/* Modal de Felicitaciones */}
+      {showSuccessModal && (
+        <div className="modal d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div className="modal-content border-0 shadow-lg text-center p-4">
+              <div className="modal-body">
+                <div className="mb-4">
+                  <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '4rem' }}></i>
+                  <h2 className="fw-bold mt-3">¡Felicidades!</h2>
+                  <p className="text-muted">
+                    Tu pago ha sido procesado con éxito.{' '}
+                    {paidTickets.length > 1
+                      ? `Ya tienes tus ${paidTickets.length} boletos disponibles.`
+                      : 'Ya tienes tu boleto disponible.'}
+                  </p>
+                </div>
+
+                {paidTickets.length === 0 && (
+                  <p className="text-muted">Generando tus tickets…</p>
+                )}
+
+                <div className="tickets-print-area d-grid gap-4 mb-4">
+                  {paidTickets.map((reservation) => (
+                    <Ticket
+                      key={reservation.id}
+                      reservation={reservation}
+                      event={events.find((item) => item.id === reservation.eventId)}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="btn btn-success btn-lg w-100 py-3 fw-bold"
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    navigate('/mis_tickets');
+                  }}
+                >
+                  Ir a mis tickets
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {paymentComplete && (
         <div className="alert alert-success" role="status">
@@ -124,7 +191,12 @@ function Carrito() {
                       <tr key={reservation.id}>
                         <td>
                           <div className="fw-semibold">{reservation.eventTitle}</div>
-                          <small className="text-muted">Reserva #{reservation.id}</small>
+                          <small className="text-muted">
+                            Reserva #{reservation.id}
+                            {reservation.seatLabel
+                              ? ` · ${reservation.zoneName ? `${reservation.zoneName} · ` : ''}Asiento ${reservation.seatLabel}`
+                              : ''}
+                          </small>
                         </td>
                         <td>{event?.date ?? 'Fecha no disponible'}</td>
                         <td className="fw-semibold">{price === 0 ? 'Gratis' : formatPrice(price)}</td>

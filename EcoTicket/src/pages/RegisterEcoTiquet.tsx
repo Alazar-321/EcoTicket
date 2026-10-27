@@ -13,7 +13,12 @@ type AccountType = "Attendee" | "Organizer";
 // Interface para el estado del formulario
 interface FormData {
   fullName: string;
+  identificationType: "CEDULA" | "PASAPORTE";
+  identification: string;
   email: string;
+  address: string;
+  city: string;
+  phones: string[];
   password: string;
   confirmPassword: string;
   accountType: AccountType;
@@ -24,6 +29,10 @@ interface FormData {
 // Interface para los errores del formulario
 interface FormErrors {
   fullName?: string;
+  identification?: string;
+  address?: string;
+  city?: string;
+  phones?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -41,7 +50,12 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
+    identificationType: "CEDULA",
+    identification: "",
     email: "",
+    address: "",
+    city: "",
+    phones: [""],
     password: "",
     confirmPassword: "",
     accountType: "Attendee",
@@ -81,8 +95,30 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
     }
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const { name, value, type, checked } = e.target;
+  const handlePhoneChange = (index: number, value: string): void => {
+    setFormData((prev) => ({
+      ...prev,
+      phones: prev.phones.map((p, i) => (i === index ? value : p)),
+    }));
+    if (errors.phones) setErrors((prev) => ({ ...prev, phones: "" }));
+  };
+
+  const addPhone = (): void => {
+    setFormData((prev) =>
+      prev.phones.length >= 5 ? prev : { ...prev, phones: [...prev.phones, ""] }
+    );
+  };
+
+  const removePhone = (index: number): void => {
+    setFormData((prev) => ({
+      ...prev,
+      phones: prev.phones.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+    const { name, value, type } = e.target;
+    const checked = e.target instanceof HTMLInputElement ? e.target.checked : false;
 
     setFormData((prev) => ({
       ...prev,
@@ -99,6 +135,30 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
 
     if (!formData.fullName.trim()) {
       newErrors.fullName = "El nombre es requerido.";
+    }
+
+    if (!formData.identification.trim()) {
+      newErrors.identification =
+        formData.identificationType === "CEDULA"
+          ? "El número de cédula es requerido."
+          : "El número de pasaporte es requerido.";
+    } else if (!/^[A-Za-z0-9]{5,20}$/.test(formData.identification.trim())) {
+      newErrors.identification = "Usa entre 5 y 20 letras o números, sin espacios ni signos.";
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = "La dirección es requerida.";
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = "La ciudad es requerida.";
+    }
+
+    const filledPhones = formData.phones.map((p) => p.trim()).filter(Boolean);
+    if (filledPhones.length === 0) {
+      newErrors.phones = "Ingresa al menos un número de teléfono.";
+    } else if (filledPhones.some((p) => !/^\+?[0-9\s-]{7,15}$/.test(p))) {
+      newErrors.phones = "Revisa los teléfonos: 7 a 15 dígitos, puede iniciar con +.";
     }
 
     if (!formData.email) {
@@ -145,6 +205,11 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
             full_name: formData.fullName,
             username: formData.fullName.toLowerCase().replace(/\s+/g, "_"),
             role: formData.accountType === "Organizer" ? "AGENTE" : "CLIENTE",
+            identification_type: formData.identificationType,
+            identification: formData.identification.trim(),
+            address: formData.address.trim(),
+            city: formData.city.trim(),
+            phones: formData.phones.map((p) => p.trim()).filter(Boolean),
           },
         },
       });
@@ -154,14 +219,23 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
 
       setSubmitted(true);
     } catch (err: any) {
-      setErrors({ email: err.message || "Ocurrió un error al registrarse" });
+      const message: string = err.message || "Ocurrió un error al registrarse";
+      // Si el documento ya existe, el trigger de la base de datos rechaza el registro
+      if (/database error saving new user/i.test(message)) {
+        setErrors({
+          identification:
+            "No se pudo crear la cuenta. Revisa que el documento no esté ya registrado.",
+        });
+      } else {
+        setErrors({ email: message });
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container min-vh-100 d-flex justify-content-center align-items-center py-5 admin-agente">
+    <div className="container min-vh-100 d-flex justify-content-center align-items-center py-5">
       <div className="col-12 col-md-10 col-lg-8 col-xl-6">
         <div className="card eco-card p-4 p-md-5 bg-white">
           <div className="text-center mb-4">
@@ -246,6 +320,41 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
                 </div>
               </div>
 
+              <div className="row g-3 mb-3">
+                <div className="col-sm-5">
+                  <label htmlFor="identificationType" className="form-label">
+                    Documento
+                  </label>
+                  <select
+                    className="form-select"
+                    id="identificationType"
+                    name="identificationType"
+                    value={formData.identificationType}
+                    onChange={handleChange}
+                  >
+                    <option value="CEDULA">Cédula</option>
+                    <option value="PASAPORTE">Pasaporte</option>
+                  </select>
+                </div>
+                <div className="col-sm-7">
+                  <label htmlFor="identification" className="form-label">
+                    Número de identificación
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${errors.identification ? "is-invalid" : ""}`}
+                    id="identification"
+                    name="identification"
+                    maxLength={20}
+                    value={formData.identification}
+                    onChange={handleChange}
+                  />
+                  {errors.identification && (
+                    <div className="invalid-feedback">{errors.identification}</div>
+                  )}
+                </div>
+              </div>
+
               <div className="mb-3">
                 <label htmlFor="email" className="form-label">
                   Correo Electrónico
@@ -267,6 +376,87 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
                     <div className="invalid-feedback">{errors.email}</div>
                   )}
                 </div>
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-sm-7">
+                  <label htmlFor="address" className="form-label">
+                    Dirección
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${errors.address ? "is-invalid" : ""}`}
+                    id="address"
+                    name="address"
+                    placeholder="Ej. Calle 10 # 5-20"
+                    maxLength={150}
+                    value={formData.address}
+                    onChange={handleChange}
+                  />
+                  {errors.address && (
+                    <div className="invalid-feedback">{errors.address}</div>
+                  )}
+                </div>
+                <div className="col-sm-5">
+                  <label htmlFor="city" className="form-label">
+                    Ciudad
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${errors.city ? "is-invalid" : ""}`}
+                    id="city"
+                    name="city"
+                    maxLength={80}
+                    value={formData.city}
+                    onChange={handleChange}
+                  />
+                  {errors.city && <div className="invalid-feedback">{errors.city}</div>}
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="phone-0" className="form-label">
+                  Teléfonos
+                </label>
+                {formData.phones.map((phone, index) => (
+                  <div className="input-group mb-2" key={index}>
+                    <span className="input-group-text bg-light border-end-0">
+                      <i className="bi bi-telephone text-success"></i>
+                    </span>
+                    <input
+                      type="tel"
+                      className={`form-control border-start-0 ${errors.phones ? "is-invalid" : ""}`}
+                      id={`phone-${index}`}
+                      placeholder="Ej. +57 300 123 4567"
+                      maxLength={20}
+                      value={phone}
+                      onChange={(e) => handlePhoneChange(index, e.target.value)}
+                    />
+                    {formData.phones.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger"
+                        aria-label={`Quitar teléfono ${index + 1}`}
+                        onClick={() => removePhone(index)}
+                      >
+                        <i className="bi bi-x-lg"></i>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {errors.phones && (
+                  <div className="text-danger small mb-2">{errors.phones}</div>
+                )}
+                {formData.phones.length < 5 && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-success"
+                    onClick={addPhone}
+                  >
+                    <i className="bi bi-plus-lg me-1"></i>
+                    Agregar otro teléfono
+                  </button>
+                )}
               </div>
 
               <div className="mb-3">
@@ -358,7 +548,7 @@ export default function RegisterEcoTiquet(): React.JSX.Element {
                 <label className="form-check-label small" htmlFor="acceptTerms">
                   Acepto los{" "}
                   <a
-                    href="/terminos"
+                    href="#terms"
                     className="text-success text-decoration-underline"
                   >
                     Términos Eco-Sostenibles

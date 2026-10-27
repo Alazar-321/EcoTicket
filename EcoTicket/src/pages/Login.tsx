@@ -123,7 +123,7 @@ function Login() {
                     <div className="small text-muted">
                       <p className="mb-1 fw-semibold">Usuarios de prueba:</p>
                       <p className="mb-1">
-                        Admin: <strong>admin@ecoticket.com/ querty1234</strong>
+                        Admin: <strong>admin2@ecoticket.com/ querty12345</strong>
                       </p>
                       {/* <p className="mb-1">
                         Agente: <strong>agente / 1234</strong>
